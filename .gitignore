@@ -7,3 +7,4 @@ out
 *.piko
 *.xcode*
 liscores.txt
+*.dylib
