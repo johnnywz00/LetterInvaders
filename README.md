@@ -15,15 +15,22 @@ The event managing and game state registration are probably a bit of overkill fo
 
 ### FILE DESCRIPTIONS
 * **sfmlApp:**  Implements `main()` and the abstract app
-* **:**  Implements primary graphical elements; physics; game logic
-* **objects:**  Small structs representing balls, pockets, etc.
+* **sfgamewindow:** Wrapper class for sf::RenderWindow
+* **sharedcontext:** Small class for providing access to key objects without using globals
+* **eventmanager:** Manager class to handle keystrokes, mouse activity, etc.
+* **basestate:** Base class for different game states
+* **statemanager:** Manager class for switching game states
+* **mainmenu:** Opening menu "state"
+* **spherecollision:**  Implements primary graphical elements, physics, game logic for the basic "Letter Balls" state
+* **letterinvaders:**  Implements primary graphical elements, physics, game logic for the slighty more involved "Letter Invaders" state
+* **ballbumper:**  Small structs representing balls, bumpers, etc.
   
 (From my "reusable modules" repo: https://github.com/johnnywz00/SFML-shared-headers)
 * **jwz:**  C++ utility functions, #defines, shortcuts
 * **jwzsfml:**  Like above, but SFML-specific
 
 ### BUILDING INSTRUCTIONS
-Ready-made program files are available on the Releases page of this repository, with versions for MacOS, Windows, and Linux. If you have reasons for building from source:
+Ready-made program files are available on the Releases page of this repository, with versions for MacOS, Windows, and Linux. If your OS isn't supported by the pre-made versions, or if you have other reasons for building from source:
 - Clone this repository, and navigate to the root folder of that clone in a terminal window.
 - Run:
 <pre>
