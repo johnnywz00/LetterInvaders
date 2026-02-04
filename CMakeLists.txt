@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(Game LANGUAGES CXX)
+project(LetterInvaders LANGUAGES CXX)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
@@ -18,6 +18,22 @@ FetchContent_Declare(SFML
 set(SFML_BUILD_SHARED_LIBS ON CACHE BOOL "Build SFML as shared libraries")
 set(SFML_STATIC_LIBRARIES OFF CACHE BOOL "Don't build static SFML libraries")
 FetchContent_MakeAvailable(SFML)
+
+
+FetchContent_Declare(
+    TGUI
+    GIT_REPOSITORY https://github.com/texus/TGUI.git
+    GIT_TAG        latest-stable
+)
+FetchContent_MakeAvailable(TGUI)
+
+
+FetchContent_Declare(
+    thor
+    GIT_REPOSITORY https://github.com/Bromeon/Thor.git
+    GIT_TAG        v2.2
+)
+FetchContent_MakeAvailable(thor)
 
 
 FetchContent_Declare(sfml_shared_headers
@@ -52,7 +68,10 @@ elseif(UNIX AND NOT APPLE)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE 
+	highscore
 	zsprite resource_manager timed_event_manager jwzsfml jwzhpp
+	thor
+	TGUI::TGUI
 	sfml-audio sfml-graphics sfml-window sfml-system
 )
 
