@@ -1,5 +1,6 @@
 
 	GITHUB
+(master/main)
 -set PROJNAME = GameName in repository variables
 -alter the README
 -add source files
