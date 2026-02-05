@@ -11,7 +11,7 @@ This program was basically just an exercise for myself when I was teaching mysel
 
 "Letter Invaders" is a step up in difficulty, where the player has to type the letter shown on a descending ball before it ricochets its way to the bottom of the screen. It has levels of increasing difficulty and high scores. 
 
-The event managing and game state registration are probably a bit of overkill for what this program is, but I was adopting someone else's approach for setting up an abstract SFML app when I was brand-new to GUI programming. 
+The event managing and game state registration are probably a bit of overkill for what this program is, but I was adopting someone else's approach for setting up an abstract SFML app when I was brand-new to GUI programming. I used the TGUI library to facilitate entering and displaying high scores, and the Thor library for its animator.
 
 ### FILE DESCRIPTIONS
 * **sfmlApp:**  Implements `main()` and the abstract app
