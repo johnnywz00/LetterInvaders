@@ -19,7 +19,7 @@ set(SFML_BUILD_SHARED_LIBS ON CACHE BOOL "Build SFML as shared libraries")
 set(SFML_STATIC_LIBRARIES OFF CACHE BOOL "Don't build static SFML libraries")
 FetchContent_MakeAvailable(SFML)
 
-
+set(TGUI_BACKEND SFML_GRAPHICS)
 FetchContent_Declare(
     TGUI
     GIT_REPOSITORY https://github.com/texus/TGUI.git
