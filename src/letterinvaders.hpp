@@ -1,10 +1,3 @@
-//
-//  letterinvaders.hpp
-//  LetterBallsXC
-//
-//  Created by John Ziegler on 6/29/24.
-//  Copyright © 2024 John Ziegler. All rights reserved.
-//
 
 #ifndef letterinvaders_hpp
 #define letterinvaders_hpp
@@ -12,7 +5,6 @@
 #include <TGUI/TGUI.hpp>
 #include <TGUI/Backend/SFML-Graphics.hpp>
 #include <Thor/Animations.hpp>
-#include <SFML/Audio.hpp>
 #include "basestate.hpp"
 #include "eventmanager.hpp"
 
@@ -20,48 +12,81 @@
 #include "highscore.hpp"
 
 
-inline Font gLetFont;
-
-class LetterInvadersState: public BaseState {
-    
+class LetterInvadersState: public BaseState
+{
 public:
-
-    LetterInvadersState (StateManager* mgr) :
-            BaseState(mgr) { }
+    LetterInvadersState (StateManager* mgr)
+		: BaseState(mgr)
+	{ }
     
-    ~LetterInvadersState () ;
+	void onCreate ();
+	
+	void onDestroy ();
 
-    void activate () ;
+	void activate ();
 
-    void deactivate () ;
+    void deactivate ();
 
-    void draw ();
+	void mouseClick (EventDetails*) { }
+	
+	void mouseRelease (EventDetails*) { }
+	
+	void onKeyPress (Keyboard::Key);
 
-    void update (const Time&);
+	void onEscape (EventDetails*);
+	
+	void update (const Time&);
 
-    void loadTextures ();
-    
-    void loadSounds();
-    
-    void onCreate ();
+	void draw ();
 
-    void onDestroy ();
+private:
+	const string LHLetters 		{ "qwertasdfgzxcvb" };
+	const string RHLetters 		{ "yuiophjklnm" };
+	const string AllLets 		{ "abcdefghijklmnopqrstuvwxyz" };
+	const string AllNums 		{ "1234567890" };
+	const string TopRow 		{ "qwertyuiop" };
+	const string MiddleRow 		{ "asdfghjkl" };
+	const string BottomRow 		{ "zxcvbnm" };
+	const string Punctuation 	{ "[]\\;',./=-~" };
+	const string AllKeys 		{ AllLets + AllNums + Punctuation };
+	static constexpr uint   	initBumperCols = 7;
+	static constexpr uint   	initBumperRows = 3;
+	static constexpr uint   	wallThickness = 0;
+	static constexpr float  	initGrav = .1;
+	static constexpr float  	initBumperLoss = .15;
+	static constexpr float  	upperDeadZone = 95;
+	static constexpr float  	lowerDeadZone = 95;
+	static constexpr float  	initSpawnInterval = 6;
 
-    void onEscape (EventDetails*);
+	const vector<string> sets {
+		AllLets, AllNums, LHLetters, RHLetters, TopRow, MiddleRow,
+		BottomRow, Punctuation, AllKeys
+	};
+	
+	const vector<string> setsLabels {
+		"Letters", "Numbers", "LH", "RH", "TopRow", "MiddleRow",
+		"BottomRow", "Punctuation", "All"
+	};
+	
+	const vector<Keyboard::Key> setsKeys {
+		Keyboard::Num1, Keyboard::Num2, Keyboard::Num3, Keyboard::Num4,
+		Keyboard::Num5, Keyboard::Num6, Keyboard::Num7, Keyboard::Num8,
+		Keyboard::Num9
+	};
+	
+	const vector<Color> ballColors {
+		ORANGE, ORANGE50, ORANGE75, MEDORANGE, MEDORANGE50, MEDORANGE75,
+		AZURE, AZURE50, AZURE75, MEDAZURE, MEDAZURE50, MEDAZURE75, DKAZURE,
+		DKAZURE75, DKAZURE50, PURPLE, PURPLE50, PURPLE75
+	};
 
-    void mouseClick (EventDetails*);
+	void setUpHighScores ();
 
-    void mouseRelease (EventDetails*);
-    
-    void onKeyPress (Keyboard::Key);
+	void reset ();
 
-    void reset ();
+	void placeBumpers ();
 
-    void setUpHighScores ();
-
-    void spawnBall (Time);
-
-    void placeBumpers ();
+	void spawnBall (Time);
 
     void destroyBall (Ball&);
 
@@ -74,17 +99,23 @@ public:
     string highScoreToText (HighScore&);
 
     void topTenToFile ();
+	
+	RenderWindow* renWin ();
 
-    enum LetterGroup { All, LH, RH, Letters, Numbers, Custom };
-    
-    Font                            font;
+	float SCRW () { return renWin()->getDefaultView().getSize().x; }
+	float SCRH () { return renWin()->getDefaultView().getSize().y; }
+	float SCRCX () { return renWin()->getDefaultView().getSize().x / 2; }
+	float SCRCY () { return renWin()->getDefaultView().getSize().y / 2; }
+	
+	
+	tgui::Gui*                      gui;
+	thor::Animator<Ball, string>    animator;
     Text                            txt;
     ZSprite                         bkgd;
-    Sprite                          bkgdFrame;
-    vector<Texture>                 texs;
-    static const vector<string>     texList;
-    tgui::Gui*                      gui;
-    thor::Animator<Ball, string>    animator;
+	Sprite							ground
+									, lWall
+									, rWall
+	;
     Clock                           animClock;
 
     vector<Bumper>                  bumpers;
@@ -94,18 +125,9 @@ public:
     RectangleShape                  beam;
     ZSprite*                        gClickedOn = nullptr;
 
-    LetterGroup                     group = All;
     string                          curLetterSet;
 	string							curSetLabel;
     string                          customLetters {};
-    
-    static constexpr int            numSounds = 6;
-    SoundBuffer                     buffers[numSounds];
-    Sound                           sounds[numSounds];
-    static const vector<string>     soundFileList;
-	
-	SoundBuffer						levelUpBuf;
-	Sound							levelUpSnd;
 
     Time                            fadeTime;
     Time                            lastSpawnTime;
@@ -120,45 +142,7 @@ public:
     bool                            drawBeam;
     bool                            running;
     bool                            gameOver;
-
 };
-
-
-const string LHLetters { "qwertasdfgzxcvb" };
-const string RHLetters { "yuiophjklnm" };
-const string AllLets { "abcdefghijklmnopqrstuvwxyz" };
-const string AllNums { "1234567890" };
-const string TopRow { "qwertyuiop"};
-const string MiddleRow { "asdfghjkl"};
-const string BottomRow { "zxcvbnm"};
-const string Punctuation { "[]\\;',./=-~"};
-const string All = AllLets + AllNums + Punctuation;
-
-const vector<string> sets {
-	AllLets, AllNums, LHLetters, RHLetters, TopRow, MiddleRow,
-	BottomRow, Punctuation, All
-};
-const vector<string> setsLabels {
-	"Letters", "Numbers", "LH", "RH", "TopRow", "MiddleRow",
-	"BottomRow", "Punctuation", "All"
-};
-
-const vector<Color> ballColors {
-    ORANGE, ORANGE50, ORANGE75, MEDORANGE, MEDORANGE50, MEDORANGE75, AZURE, AZURE50,
-    AZURE75, MEDAZURE, MEDAZURE50, MEDAZURE75, DKAZURE, DKAZURE75, DKAZURE50, PURPLE,
-    PURPLE50, PURPLE75
-};
-
-
-constexpr float     initGrav = .12;
-constexpr float     initBumperLoss = .15;
-constexpr uint      initBumperCols = 7;
-constexpr uint      initBumperRows = 3;
-constexpr uint      wallThickness = 0;
-constexpr float     upperDeadZone = 95;
-constexpr float     lowerDeadZone = 95;
-constexpr float     initSpawnInterval = 6.;
-
 
 #endif /* letterinvaders_hpp */
 

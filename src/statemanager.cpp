@@ -1,23 +1,47 @@
+
+/* This file based on work by Raimondas Pupius
+ * in SFML Game Development by Example
+ */
+
 #include "statemanager.hpp"
 
-StateManager::StateManager(SharedContext* ctx) :
-        context(ctx) {
-            
+StateManager::StateManager(SharedContext* ctx)
+	: context(ctx)
+{
     registerState<MainMenuState>(StateType::MainMenu);
 	registerState<SphereCollision>(StateType::SphereCollision);
     registerState<LetterInvadersState>(StateType::tLetterInvaders);
 }
 	
-StateManager::~StateManager () {
-    
+StateManager::~StateManager ()
+{
 	for (auto& itr : states) {
 		itr.second->onDestroy();
 		delete itr.second;
     }
 }
 	
-void StateManager::draw () {
-    
+void StateManager::update (const Time& time)
+{
+	if (states.empty())
+		return;
+	if (states.back().second->isTranscendent() && states.size() > 1) {
+		auto itr = states.end();
+		while (itr != states.begin()) {
+			if (itr != states.end()) {
+				if (!itr->second->isTranscendent())
+					break;
+			}
+			--itr;
+		}
+		for ( ; itr != states.end(); ++itr)
+			itr->second->update(time);
+	}
+	else states.back().second->update(time);
+}
+	
+void StateManager::draw ()
+{
 	if (states.empty())
         return;
 	if (states.back().second->isTransparent() && states.size() > 1) {
@@ -37,27 +61,8 @@ void StateManager::draw () {
 	else  states.back().second->draw();
 }
 	
-void StateManager::update (const Time& time) {
-    
-	if (states.empty())
-        return;
-	if (states.back().second->isTranscendent() && states.size() > 1) {
-		auto itr = states.end();
-		while (itr != states.begin()) {
-			if (itr != states.end()) {
-				if (!itr->second->isTranscendent())
-                    break;
-            }
-			--itr;
-        }
-		for ( ; itr != states.end(); ++itr)
-            itr->second->update(time);
-    }
-	else  states.back().second->update(time);
-}
-	
-bool StateManager::hasState (const StateType& typ) {
-    
+bool StateManager::hasState (const StateType& typ)
+{
 	for (auto itr = states.begin(); itr != states.end(); ++itr) {
 		if (itr->first == typ) {
 			auto removed = std::find(toRemove.begin(), toRemove.end(), typ);
@@ -69,8 +74,8 @@ bool StateManager::hasState (const StateType& typ) {
 	return false;
 }
 	
-void StateManager::switchTo (const StateType& typ) {
-    
+void StateManager::switchTo (const StateType& typ)
+{
 	context->eventManager->setCurrentState(typ);
 	for (auto itr = states.begin(); itr != states.end(); ++itr) {
 		if (itr->first == typ) {
@@ -80,7 +85,6 @@ void StateManager::switchTo (const StateType& typ) {
 			states.erase(itr);
 			states.emplace_back(tmpTyp, tmpStat);
 			tmpStat->activate();
-			//context->win->getRenderWindow()->setView(tmpStat->getView());
 			return;
         }
     }
@@ -88,11 +92,10 @@ void StateManager::switchTo (const StateType& typ) {
         states.back().second->deactivate();
 	createState(typ);
 	states.back().second->activate();
-	//context->win->getRenderWindow()->setView(states.back().second->getView());
 }
 	
-void StateManager::createState (const StateType& typ) {
-    
+void StateManager::createState (const StateType& typ)
+{
     auto newState = stateFactory.find(typ);
     if (newState == stateFactory.end())
         return;
@@ -102,8 +105,8 @@ void StateManager::createState (const StateType& typ) {
     state->onCreate();
 }
 	
-void StateManager::removeState (const StateType& typ) {
-    
+void StateManager::removeState (const StateType& typ)
+{    
 	for (auto itr = states.begin(); itr != states.end(); ++itr) {
 		if (itr->first == typ) {
 			itr->second->onDestroy();

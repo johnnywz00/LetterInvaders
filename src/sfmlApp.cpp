@@ -1,11 +1,10 @@
 #include "sfmlApp.hpp"
 
 
-
-Game::Game () :
-        window("LetterBalls", vecU(1440, 900)),
-        stateManager(&context) {
-            
+Game::Game ()
+	: window("LetterBalls", vecU(1440, 900))
+	, stateManager(&context)
+{
     clock.restart();
     srand(unsigned(time(nullptr)));
     context.win = &window;
@@ -15,25 +14,25 @@ Game::Game () :
     stateManager.switchTo(StateType::MainMenu);
     
     gui.setTarget(*(window.getRenderWindow()));     // GUI
-    tgui::Theme::setDefault("resources/Black.txt"); // GUI
+	tgui::Theme::setDefault((Resources::executingDir() / "resources" / "Black.txt").string()); // GUI
 }
  
-void Game::update () {
-    
+void Game::update ()
+{
     window.update();
     stateManager.update(elapsed);
 }
 
-void Game::render () {
-    
+void Game::render ()
+{
     window.beginDraw();
     stateManager.draw();
     gui.draw();             // GUI
     window.endDraw();
 }
 
-void Game::lateUpdate () {
-    
+void Game::lateUpdate ()
+{
     stateManager.processRequests();
     restartClock();
 }
@@ -51,6 +50,7 @@ int main (int argc, char **argv) {
     if (!img.loadFromFile(iconPath))
         return EXIT_FAILURE;
 
+	Resources::initialize(argc, argv);
 
 	Game game;
 	while (!game.getWindow()->isDone()) {
@@ -59,4 +59,3 @@ int main (int argc, char **argv) {
 		game.lateUpdate();
     }
 }
-	

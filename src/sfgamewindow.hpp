@@ -1,3 +1,8 @@
+
+/* This file based on work by Raimondas Pupius
+ * in SFML Game Development by Example
+ */
+
 #ifndef JWZ_GAMEWINDOW
 #define JWZ_GAMEWINDOW
 
@@ -7,16 +12,15 @@
 
 
 inline const string defaultTitle { "LetterInvaders" };
-inline const string iconPath { "resources/icon.png" };
+inline const string iconPath { "resources/images/icon.png" };
 
 
 class Game;
 
-class SFGameWindow {
-
+class SFGameWindow
+{
     friend class Game;
 public:
-    
     SFGameWindow ();
 
     SFGameWindow (const string& title, const vecU& size);
@@ -34,9 +38,7 @@ public:
     bool isDone () { return _isDone; }
     
     bool isFullscreen () { return _isFullscreen; }
-    
-    bool isStretched () { return _isStretched; }
-    
+
     bool isFocused () { return _isFocused; }
     
     vecU getWindowSize () { return windowSize; };
@@ -47,25 +49,16 @@ public:
     
     void close (EventDetails* det = nullptr) { _isDone = true; };
 
-    void toggleFullscreen (EventDetails*);
     
-    void toggleStretchGraphics ();
-    
-    void setToggledView (bool);
-    
-    void adjustViewOnState ();
-     
-    
-    vecf                    screenOffsetFrom1440x900;
-    Game*                   game;
+	Game*                   game;
     
 private:
     
+	void create ();
+	
+	void setup (const string& title, const vecU& size);
+	
     void destroy () { window.close(); };
-    
-    void setup (const string& title, const vecU& size);
-    
-    void create ();
     
     Image                   icon;
     RenderWindow            window;

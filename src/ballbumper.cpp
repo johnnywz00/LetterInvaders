@@ -1,66 +1,55 @@
-//
-//  ballbumper.cpp
-//  LetterBallsXC
-//
-//  Created by John Ziegler on 7/1/24.
-//  Copyright © 2024 John Ziegler. All rights reserved.
-//
 
 #include "ballbumper.hpp"
 
 
-Bumper::Bumper (Texture* tx) {
-
-    s.setTexture(*tx);
-    s.setScale(2, 2);
-    ::cO(s);
+Bumper::Bumper ()
+{
+	s.setTexture(gTexture("bumper"));
+    s.setScale({2, 2});
+    ::centerOrigin(s);
 }
 
 
-Ball::Ball (Texture* tx) {
-
+Ball::Ball ()
+{
     basicInit();
 }
 
-Ball::Ball (Texture* tx, string str, Color c) {
-
-    s.setTexture(*tx);
+Ball::Ball (string str, Color c)
+{
+    s.setTexture(gTexture("ball"));
+	s.setColor(c);
     basicInit();
-    s.setColor(c);
     txt.setString(str);
     if (txt.getString() == "W")
+		/* A hack to keep 'W' more centered on the ball */
         txt.setCharacterSize(36);
     key = keyMap[txt.getString()];
 }
 
-Font gLetFont;
-
-void Ball::basicInit () {
-
-    velocity = vecF(0., 0.);
-    isActive = false;
-    ::centerOrigin(s);
-    s.setPosition(randRange(50, ScrW - 50), -50);
-    txt = Text("", gLetFont, 45);
-    ::centerOrigin(txt);
-    txt.setPosition(s.gP() - vecF(15, 30));
+void Ball::basicInit ()
+{
+	auto scrWid = VideoMode::getDesktopMode().width;
+	isActive = true;
+	float scale = float(randRange(80, 150)) / 100;
+	s.setScale(scale, scale);
+	centerOrigin();
+    s.setPosition(randRange(50, scrWid - 50), -50);
+	float r = s.gGB().width / 2;
+	mass = (4 / 3) * pi * r * r * r;
+	blastDestX = float(randRange(0, scrWid + 200) - 200);
+	
+    txt = Text("", gFont("ball"), 45);
     txt.setOutlineColor(Color::Black);
     txt.setOutlineThickness(3);
     txt.setFillColor(Color::White);
     txt.setStyle(Text::Bold);
-
-    float scale = float(randRange(80, 150)) / 100;
-    s.setScale(scale, scale);
-    float r = s.gGB().width / 2;
-    mass = (4 / 3) * pi * r * r * r;
-    blastDestX = float(randRange(0, ScrW + 200) - 200);
-
-    isActive = true;
+	// Ball starts out of screen and update() will set txt's position
 }
 
 
-lutab<string, Keyboard::Key> Ball::keyMap {
-    
+unordered_map<string, Keyboard::Key> Ball::keyMap
+{
     { "A", Keyboard::A },
     { "B", Keyboard::B },
     { "C", Keyboard::C },
@@ -108,5 +97,4 @@ lutab<string, Keyboard::Key> Ball::keyMap {
 	{ "-", Keyboard::Hyphen },
 	{ "=", Keyboard::Equal },
 	{ "`", Keyboard::Tilde }
-
 };

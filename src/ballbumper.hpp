@@ -1,31 +1,26 @@
-//
-//  ballbumper.hpp
-//  LetterBallsXC
-//
-//  Created by John Ziegler on 7/1/24.
-//  Copyright © 2024 John Ziegler. All rights reserved.
-//
 
 #ifndef ballbumper_hpp
 #define ballbumper_hpp
 
 #include "vsprite.hpp"
+#include "resourcemanager.hpp"
 
 
-struct WheelBumper: public VSprite {
 
-    WheelBumper () { setup(); };
-    
-    WheelBumper (const Texture& texture) {
-        
-        s.setTexture(texture);
-        rb.setTexture(texture); setup();
+struct WheelBumper: public VSprite
+{
+    WheelBumper ()
+	{
+		s.setTexture(gTexture("wheel"));
+        rb.setTexture(gTexture("wheel"));
+		setup();
     }
     
-    void takeHit () {
+    void takeHit ()
+	{
         ++hits;
         spinRate = hits * 1.25;
-        if (randRange(0, 10) < 5)
+		if (flipCoin())
             spinRate *= -1;
         if (hits == 2)
             rb.setColor(Color(110, 110, 255));
@@ -47,28 +42,26 @@ struct WheelBumper: public VSprite {
 
 
 
-struct Bumper: public ZSprite {
-
-    Bumper (Texture*);
+struct Bumper: public ZSprite
+{
+    Bumper ();
 };
 
 
 
-struct Ball: public VSprite {
-
-    Ball () { }
-
-    Ball (Texture*) ;
+struct Ball: public VSprite
+{
+    Ball ();
     
-    Ball (Texture*, string, Color);
-    
-    void basicInit () ;
+    Ball (string, Color);
+	
+    void basicInit ();
 
-    static lutab<string, Keyboard::Key> keyMap;
+	static unordered_map<string, Keyboard::Key> keyMap;
 
-    Text            txt;
+	Text            txt;
     Keyboard::Key   key;
-    vecf            blastPos {};
+    vecF            blastPos;
     float           mass;
     float           blastDestX;
     bool            isActive;
@@ -78,9 +71,9 @@ struct Ball: public VSprite {
 
 struct Block: public ZSprite
 {
-	Block (const Texture& tex)
+	Block ()
 	{
-		setTexture(tex);
+		setTexture(gTexture("block"));
 	}
 };
 

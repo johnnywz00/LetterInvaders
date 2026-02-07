@@ -9,20 +9,29 @@
 #include "mainmenu.hpp"
 #include "statemanager.hpp"
 
-void MainMenuState::activate () {
-    
-}
-
-void MainMenuState::onDestroy () {
-    
-    EventManager* evMgr = stateManager->getContext()->eventManager;
-    evMgr->removeCallback(StateType::MainMenu, "Mouse_Left");
-    evMgr->removeCallback(StateType::MainMenu, "Key_Escape");
-}
+const string MainMenuState::instrucsStr =
+"\tLETTER BALLS:\n"
+"Just push the keys printed on the balls and watch them bounce!\n"
+"SPACE BAR- Resets the balls, using only alphabetic characters.\n"
+"ALT/OPTION + SPACE BAR- Resets, using only numbers.\n"
+"SHIFT + SPACE BAR- Resets with alphabetic and numeric characters.\n"
+"ESCAPE- Returns to the menu.\n"
+"-You can twiddle the gravity strength and the collision velocity loss\n"
+" by holding SHIFT and pushing 1-4.\n"
+"-The wheels can be mouse-dragged around if desired.\n"
+" \n \n"
+"\tLETTER INVADERS:\n"
+"Type the character on the falling ball before it hits the ground!\n"
+"SPACE BAR- Starts or pauses the game.\n"
+"Y- Resets without immediately starting. While still paused, you can\n"
+"   choose which character group to work on by pressing a number key\n"
+"   from 1-9.\n"
+"-If you get a high score, type your name and hit Enter/Return; then\n"
+" hit Y to play again, or Escape to return to the menu."
+" \n \n \n\t\t\tJohn Ziegler, 2020-2024\n\t\t\tjohnnywz00@yahoo.com"
+;
 
 void MainMenuState::onCreate () {
-    
-    stateManager->getContext()->win->adjustViewOnState();
     
     EventManager* evMgr = stateManager->getContext()->eventManager;
     evMgr->addCallback(StateType::MainMenu, "Mouse_Left", 
@@ -30,45 +39,54 @@ void MainMenuState::onCreate () {
     evMgr->addCallback(StateType::MainMenu, "Key_Escape", 
             &MainMenuState::escQuit, this);
     
-    loadByMethod(txBkgd, "resources/graybkgd.png");
-    txBkgd.setRepeated(true);
-    bgSprite.setTexture(txBkgd);
-    bgSprite.setColor(Color::Yellow);
-    bgSprite.setTextureRect(IntRect(0, 0, ScrW, ScrH));
+	bgSprite.setTexture(gTexture("bkgd"));
+	bgSprite.setColor(ORANGE);
+    bgSprite.setTextureRect(IntRect(0, 0, scrw, scrh));
     centerOrigin(bgSprite);
-    bgSprite.setPosition(ScrCX, ScrCY);
+    bgSprite.setPosition(scrcx, scrcy);
     
-    loadByMethod(font, "resources/TwoForJuanNF.otf");
-    loadByMethod(labelFont, "resources/TestarossaNF.otf");
-    text.setFont(font);
+    text.setFont(gFont("menuTitle"));
     text.setString(String("L E T T E R B A L L S!"));
-    text.setCharacterSize(100);
+    text.setCharacterSize(120);
     text.setOutlineColor(Color(128, 128, 128));
     text.setOutlineThickness(3);
     centerOrigin(text);
-    text.sP(ScrCX, 50);
+    text.sP(scrcx, 200);
+	
+	whichPlayer.setFont(gFont("menuButton"));
+	whichPlayer.setCharacterSize(40);
+	whichPlayer.setFillColor(Color(128, 128, 128));
+	centerOrigin(whichPlayer);
+	whichPlayer.sP(scrcx, scrh - 100);
+	
+	instrucs.setFont(gFont("ball"));
+	instrucs.setCharacterSize(20);
+	instrucs.setFillColor(Color(40, 40, 50));
+	instrucs.sP(scrcx + 100, 400);
+	instrucs.setString(instrucsStr);
     
     buttonSize = vecF(500, 55);
     buttonPadding = 15;
-    buttonPos = vecF(ScrCX - buttonSize.x / 2 - buttonPadding / 2, ScrCY - 180);
+    buttonPos = vecF(scrcx - buttonSize.x / 2 - buttonPadding / 2, scrcy - 80);
     
     string str[numButtons];
     str[0] = "Letter Balls";
     str[1] = "Letter Invaders";
-    // Update `numButtons` if adding
+    // Update `numButtons` and mouseClick if adding
     str[numButtons - 1] = "Exit";
     
-    for (int i = 0; i <  numButtons; ++i) {
+    for (int i = 0; i < numButtons; ++i) {
         vecF bp(i > 8 ? buttonPos.x + buttonSize.x + buttonPadding : buttonPos.x,
             buttonPos.y + (i % 9 * (buttonSize.y + buttonPadding)));
         rects[i].setSize(buttonSize);
-        rects[i].setFillColor(Color(132, 164, 224));
-        if (i == numButtons - 1) rects[i].setFillColor(Color(225, 165, 71));
+        rects[i].setFillColor(Color(100, 120, 224));
+        if (i == numButtons - 1)
+			rects[i].setFillColor(Color(225, 165, 71));
         rects[i].setOutlineColor(Color(54, 60, 25));
         rects[i].setOutlineThickness(5);
         rects[i].setOrigin(buttonSize.x / 2., buttonSize.y / 2.);
         rects[i].setPosition(bp);
-        labels[i].setFont(labelFont);
+        labels[i].setFont(gFont("menuButton"));
         labels[i].setString(String(str[i]));
         labels[i].setCharacterSize(36);
         labels[i].setFillColor(Color(50, 50, 50));
@@ -78,8 +96,15 @@ void MainMenuState::onCreate () {
         }
     }
 
-void MainMenuState::mouseClick (EventDetails* det) {
-    
+void MainMenuState::onDestroy ()
+{
+	EventManager* evMgr = stateManager->getContext()->eventManager;
+	evMgr->removeCallback(StateType::MainMenu, "Mouse_Left");
+	evMgr->removeCallback(StateType::MainMenu, "Key_Escape");
+}
+
+void MainMenuState::mouseClick (EventDetails* det)
+{
     vecI mp = det->mouse;
     float halfx = buttonSize.x / 2.;
     float halfy = buttonSize.y / 2.;
@@ -92,25 +117,49 @@ void MainMenuState::mouseClick (EventDetails* det) {
                 stateManager->switchTo(StateType::SphereCollision);
             else if (i == 1)
                 stateManager->switchTo(StateType::tLetterInvaders);
-            ////////
             else if (i == numButtons-1)
                 stateManager->getContext()->win->close();
         }
     }
 }
 
-void MainMenuState::draw () {
-    
+void MainMenuState::onKeyPress (Keyboard::Key k)
+{
+	/* Personal use: children can have their own high scores files */
+	if (k == Keyboard::Key::R) {
+		MainMenuState::playerName = "Ravenna";
+		whichPlayer.setString("Ravenna");
+	}
+	else if (k == Keyboard::Key::L) {
+		MainMenuState::playerName = "Laith";
+		whichPlayer.setString("Laith");
+	}
+	else {
+		MainMenuState::playerName = "";
+		whichPlayer.setString("");
+	}
+}
+
+void MainMenuState::escQuit (EventDetails *det)
+{
+	stateManager->getContext()->win->close();
+}
+
+void MainMenuState::draw ()
+{
     RenderWindow* w = stateManager->getContext()->win->getRenderWindow();
     w->draw(bgSprite);
     w->draw(text);
-    for (int i = 0; i <  numButtons; ++i) {
+	w->draw(whichPlayer);
+	w->draw(instrucs);
+    for (int i = 0; i < numButtons; ++i) {
         w->draw(rects[i]);
         w->draw(labels[i]);
     }
 }
 
-void MainMenuState::escQuit (EventDetails *det) {
-    
-    stateManager->getContext()->win->close();
+RenderWindow* MainMenuState::renWin ()
+{
+	return stateManager->getContext()->win->getRenderWindow();
 }
+

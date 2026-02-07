@@ -1,12 +1,13 @@
+
+/* This file based on work by Raimondas Pupius
+ * in SFML Game Development by Example
+ */
+
 #ifndef JWZ_EVENTMANAGER
 #define JWZ_EVENTMANAGER
 
 #include "jwzsfml.hpp"
-
-#define _EMBEDDING
-#include "embedded.hpp"
-////////////////////////////////////////////////////////////////
-
+#include "resourcemanager.hpp"
 
 /*
 enum EventType
@@ -69,8 +70,9 @@ enum EventType
 */
 
 
-enum class EventType {
-	KeyDown = Event::KeyPressed, 
+enum class EventType
+{
+	KeyDown = Event::KeyPressed,
 	KeyUp = Event::KeyReleased, 
 	ButtonDown = Event::MouseButtonPressed, 
 	ButtonUp = Event::MouseButtonReleased, 
@@ -88,8 +90,9 @@ enum class EventType {
 };
 
 
-struct EventInfo {
-    
+
+struct EventInfo
+{
 	EventInfo () { code = 0; }
     
 	EventInfo (int evt) { code = evt; }
@@ -98,11 +101,13 @@ struct EventInfo {
 };
 
 
-struct EventDetails {
-    
+
+struct EventDetails
+{
 	EventDetails (const string& str) : name(str) { clear(); }
     
-	void clear () {
+	void clear ()
+	{
 		size = vecI(0, 0);
 		textEntered = 0;
 		mouse = vecI(0, 0);
@@ -121,13 +126,12 @@ struct EventDetails {
 
 using eventVec = vector<pair<EventType, EventInfo>>;
 
-
-struct Binding {
-    
+struct Binding
+{
 	Binding (const string& str) : name(str), details(str), ct(0) { }
     
-	void bindEvent (EventType typ, EventInfo inf = EventInfo()) {
-        
+	void bindEvent (EventType typ, EventInfo inf = EventInfo())
+	{
 		events.emplace_back(typ, inf);
     }
     
@@ -137,13 +141,11 @@ struct Binding {
 	int				ct;
 };
 	
-
 enum class StateType;
 using bindingTab = unordered_map<string, Binding*>;
 using CallbackContainer = unordered_map<string, function<void(EventDetails*)>>;
 using callbackTab = unordered_map<StateType, CallbackContainer>;
 
-////////////////////////////////////////////////////////////////
 
 
 class EventManager {
@@ -158,31 +160,30 @@ public:
     
     bool removeBinding (string name);
     
-    void setFocus (const bool& fcs) { hasFocus = fcs; };
+    void setFocus (const bool& fcs) { hasFocus = fcs; }
     
     void handleEvent (Event& evt);
     
     void update ();
     
-    void setCurrentState (StateType stat) {
-        curState = stat;
-    }
+    void setCurrentState (StateType stat) { curState = stat; }
     
-    vecI getMouse (RenderWindow* win = nullptr) {
+    vecI getMouse (RenderWindow* win = nullptr)
+	{
         return (win ? Mouse::getPosition(*win) : Mouse::getPosition());
     }
     
     template<class T>
     bool addCallback (StateType stat, const string& name,
-                      void(T::*func)(EventDetails*), T* inst) {
-        
+                      void(T::*func)(EventDetails*), T* inst)
+	{
         auto itr = callbacks.emplace(stat, CallbackContainer()).first;
         auto temp = bind(func, inst, std::placeholders::_1);
         return itr->second.emplace(name, temp).second;
     }
     
-    bool removeCallback (StateType stat, const string& name) {
-        
+    bool removeCallback (StateType stat, const string& name)
+	{
         auto itr = callbacks.find(stat);
         if (itr == callbacks.end())
             return false;
@@ -193,10 +194,9 @@ public:
         return true;
     }
         
-    string			bindingsFilename = "bindings.cfg";
+    string	bindingsFilename = "bindings.cfg";
 
 private:
-    
     void loadBindings ();
     
     bindingTab		bindings;
@@ -204,9 +204,6 @@ private:
     StateType		curState;
     bool			hasFocus;
 };
-
-////////////////////////////////////////////////////////////////
-
 	
 #endif
 

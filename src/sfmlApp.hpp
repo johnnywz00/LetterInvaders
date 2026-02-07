@@ -1,5 +1,5 @@
-#ifndef JWZ_GAME
-#define JWZ_GAME
+#ifndef LETTERINVADERSAPP_HPP
+#define LETTERINVADERSAPP_HPP
 
 
 #include <TGUI/TGUI.hpp>
@@ -8,19 +8,18 @@
 
 
 
-class Game {
-    
+class Game
+{
 public:
-    
     Game ();
     
-    ~Game () { };
+    ~Game () { }
     
-    void update () ;
+    void update ();
     
-    void render () ;
+    void render ();
     
-    void lateUpdate () ;
+    void lateUpdate ();
     
     SFGameWindow* getWindow () { return &window; };
     
@@ -28,10 +27,8 @@ public:
     
     void restartClock () { elapsed += clock.restart(); };
 
-    
 protected:
-    
-    friend class        SFGameWindow;
+	friend class SFGameWindow;
     SFGameWindow 	    window;
     tgui::Gui           gui;
     StateManager        stateManager;
@@ -39,12 +36,5 @@ protected:
     Time			    elapsed;
     SharedContext	    context;
 };
-	
 
-
-
-
-
-
-
-#endif	
+#endif

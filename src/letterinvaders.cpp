@@ -1,98 +1,390 @@
-//
-//  letterinvaders.cpp
-//  LetterBallsXC
-//
-//  Created by John Ziegler on 6/29/24.
-//  Copyright © 2024 John Ziegler. All rights reserved.
-//
 
-#include "letterinvaders.hpp"
 #include "statemanager.hpp"
+#include "letterinvaders.hpp"
+
+void swirlExit (Ball& b, float p);
+
+void LetterInvadersState::onCreate ()
+{
+	/* Register callbacks */
+	EventManager* evMgr = stateManager->getContext()->eventManager;
+	evMgr->addCallback(StateType::tLetterInvaders, "Mouse_Left",
+			&LetterInvadersState::mouseClick, this);
+	evMgr->addCallback(StateType::tLetterInvaders, "Mouse_Left_Up",
+			&LetterInvadersState::mouseRelease, this);
+	evMgr->addCallback(StateType::tLetterInvaders, "Key_Escape",
+			&LetterInvadersState::onEscape, this);
+
+	gui = stateManager->getContext()->gui;
+	
+	gSound("hitBumper").setVolume(25);
+	
+	/* Background features */
+	bkgd.setTexture(gTexture("bkgd"));
+	bkgd.setTextureRect(IntRect(0, 0, scrw * 2, scrw * 2));
+	centerOrigin(bkgd);
+	bkgd.setPosition(scrcx, scrcy);
+	
+	ground.setTexture(gTexture("ground"));
+	auto texY = ground.getTexture()->getSize().y;
+	ground.setTextureRect(IntRect(0, 0, scrw, texY));
+	ground.setPosition(0, scrh - texY);
+	
+	lWall.setTexture(gTexture("wall"));
+	auto texX = lWall.getTexture()->getSize().x;
+	lWall.setTextureRect(IntRect(0, 0, texX, scrh));
+	lWall.setPosition({10.f - texX, 0});
+
+	rWall.setTexture(gTexture("wall"));
+	rWall.setTextureRect(IntRect(0, 0, texX, scrh));
+	rWall.setPosition(scrw - 11, 0);
+
+	/* Ball-zapping laser beam */
+	beam.setFillColor(Color(255, 255, 255, 60));
+	beam.setSize({0, 5});
+	beam.setOrigin(0, 2);
+	beam.sP(scrcx, scrh);
+	
+	/* Stats text */
+	curLetterSet = sets[0];
+	curSetLabel = setsLabels[0];
+	txt = Text("", gFont("stats"), 20);
+	txt.setPosition(10, 80);
+	txt.setOutlineColor(Color(40, 40, 40));
+	txt.setOutlineThickness(1);
+	txt.setFillColor(Color(210, 210, 210));
+	txt.setString(
+				  "SCORE: " + tS(curScore) + "\n\n" +
+				  "LEVEL: " + tS(curLevel) +
+				  "\n\n" + curSetLabel);
+
+	/* Set up Thor animator for making shot balls swirl */
+	animator.addAnimation("swirlexit", &swirlExit, seconds(1.f));
+	animator.playAnimation("swirlexit");
+} //end onCreate
 
 
-
-void swirlExit (Ball& b, float p) {
-    
-    vecf dest {b.blastDestX, -100};
-    vecf vecDif = dest - b.blastPos;
-    float hypot = hyp(vecDif);
-    float radius = 80;
-    float ratio = radius / hypot;
-    vecf offset = vecDif * ratio;
-    vecf initAxis = b.blastPos + offset;
-    vecDif = dest - initAxis;
-    vecf axis = initAxis + vecDif * p;
-    vecf offs2 {b.blastPos - initAxis};
-    float initRads = toPolar(offs2).y;
-    float rads = initRads + 360 * (fmod(p, 5) / .2);
-    vecf v = toRect(radius, rads);
-    b.s.sP(axis + v);
+void LetterInvadersState::onDestroy ()
+{
+	EventManager* evMgr = stateManager->getContext()->eventManager;
+	evMgr->removeCallback(StateType::tLetterInvaders, "Mouse_Left");
+	evMgr->removeCallback(StateType::tLetterInvaders, "Mouse_Left_Up");
+	evMgr->removeCallback(StateType::tLetterInvaders, "Key_Escape");
 }
 
-
-LetterInvadersState::~LetterInvadersState () {
-    
-}
-
-void LetterInvadersState::onEscape (EventDetails* det) {
-    
+void LetterInvadersState::activate ()
+{
+	renWin()->setMouseCursorVisible(false);
+	setUpHighScores();
 	reset();
-	// remove gui? or check that deactivate is called by switchTo
+}
+
+void LetterInvadersState::deactivate ()
+{
+	renWin()->setMouseCursorVisible(true);
+	auto gui = stateManager->getContext()->gui;
+	auto scoresPtr = gui->get("scores");
+	if (scoresPtr)
+		scoresPtr->setVisible(false);
+	gui->removeAllWidgets();
+}
+
+void LetterInvadersState::onKeyPress (Keyboard::Key k)
+{
+	/* Don't register game-level keystrokes when a high score
+	 * is being entered
+	 */
+	auto scoresPtr = gui->get<tgui::Panel>("scores");
+	if (scoresPtr) {
+		if (scoresPtr->isVisible()) {
+			forNum(10) {
+				auto eb = gui->get<tgui::EditBox>("EBox" + tS(i));
+				if (eb->isFocused())
+					return;
+			}
+		}
+	}
+	
+	/* Allow choosing of key set before game start */
+	if (!running) {
+		forNum(9) {
+			if (k == setsKeys[i]) {
+				curLetterSet = sets[i];
+				curSetLabel = setsLabels[i];
+				return;
+			}
+		}
+	}
+	
+	switch(k) {
+		case Keyboard::Y:
+			if (!running)
+				reset();
+			break;
+		
+		case Keyboard::Space:
+			running = !running;
+			break;
+				
+		default:
+			break;
+	}
+}
+
+void LetterInvadersState::onEscape (EventDetails* det)
+{
+	reset();
     stateManager->switchTo(StateType::MainMenu);
 }
 
-void LetterInvadersState::onDestroy () {
-    
-    EventManager* evMgr = stateManager->getContext()->eventManager;
-    evMgr->removeCallback(StateType::tLetterInvaders, "Mouse_Left");
-    evMgr->removeCallback(StateType::tLetterInvaders, "Mouse_Left_Up");
-    evMgr->removeCallback(StateType::tLetterInvaders, "Key_Escape");
-    
+void LetterInvadersState::update (const Time& elapsed)
+{
+	/* Do nothing here during high scores display */
+	auto sc = gui->get("scores");
+	if (sc && sc->isVisible() && sc->isFocused()) {
+		return;
+	}
+ 
+	txt.setString( "SCORE: " + tS(curScore) + "\n\n" +
+				  "LEVEL: " + tS(curLevel) +
+				  "\n\n" + curSetLabel);
+	
+	if (!running || gameOver)
+		return;
 
+	/* Animate background */
+	float factor = cos(toRad(bkgdScaleDegree)) * .3 + 1;
+	bkgd.setScale({factor, factor});
+	bkgd.rotate(.05);
+	bkgdScaleDegree += .1;
+	if (bkgdScaleDegree >= 360)
+		bkgdScaleDegree -= 360;
+
+	animator.update(animClock.restart());
+	
+	/* Destroy a falling ball if the corresponding key is pressed */
+	for (auto itr = balls.begin(); itr != balls.end(); ++itr) {
+		Ball& b = *itr;
+		if (b.isActive && Keyboard::isKeyPressed(b.key)) {
+			destroyBall(b);
+			fadeTime = elapsed + seconds(.15);
+			break; // so find_if will not leave some destroyed balls unerased
+		}
+		
+		/* Currently only using the animator to make the ball
+		 * swirl around off of the screen after being shot
+		 */
+		if (!b.isActive) {
+			animator.animate(b);
+		}
+	}
+	auto p = find_if(balls.begin(), balls.end(),
+					 [&](auto& x) { return !x.isActive && x.s.gP().y <= -15; });
+	if (p != balls.end())
+		balls.erase(p);
+
+	/* Generate new falling ball based on time elapsed and level difficulty */
+	if (elapsed.asSeconds() > lastSpawnTime.asSeconds() + spawnInterval)
+		spawnBall(elapsed);
+
+	/* Rudimentary Fuse behavior for when to turn off last laser shot*/
+	if (elapsed > fadeTime)
+		drawBeam = false;
+
+	
+	/* Animate bouncing balls */
+	float phi = 0, hyp1 = 0;
+	float ax1, ay1, bx1, by1;
+
+	/* Use the fastest-moving ball as a gauge for incremental
+	 * collision checking
+	 */
+	float highSpd = 0;
+	int numBalls = int(balls.size());
+	for (int b = 0; b < numBalls; ++b) {
+		if (!balls[b].isActive)
+			continue;
+		balls[b].velocity.y += gravAccel;
+		vecF vp = toRPolar(balls[b].velocity);
+		if (vp.x > highSpd)
+			highSpd = vp.x;
+	}
+	highSpd = ceil(highSpd);
+	
+	/* Store current positions of balls for reverting to in
+	 * the case of a collision
+	 */
+	vector<vecF> savePosns(numBalls);
+	
+	for (int i = 0; i <  highSpd; ++i) {
+		/* First tentatively move each ball */
+		for (int b = 0; b < numBalls; ++b) {
+			if (!balls[b].isActive)
+				continue;
+			savePosns[b] = balls[b].s.gP();
+			balls[b].s.move(balls[b].velocity / highSpd);
+		}
+		
+		/* Collision check loop for each ball */
+		for (int b = 0; b < numBalls; ++b) {
+			if (!balls[b].isActive)
+				continue;
+			VSprite& c = balls[b];
+			Sprite& s = balls[b].s;
+			ax1 = c.velocity.x;
+			ay1 = c.velocity.y;
+			vecF ap1 = toRPolar(c.velocity);
+			float cradius = s.gGB().width / 2;
+			vecF cpos = s.gP();
+			
+			vecF vp = toPolar(c.velocity);
+			float oldAdjst = czdg(vp.y + 180);
+			float newAng, contactAng;
+			
+			/* Check whether cur ball is hitting a bumper */
+			for (auto& obj : bumpers) {
+				float radius = obj.s.gGB().width / 2;
+				vecF pos = obj.s.gP();
+				if (hyp(cpos, pos) > cradius + radius)
+					continue;
+				
+				/* Hit a wheel */
+				s.sP(savePosns[b]);
+				cpos = s.gP();
+				contactAng = toDeg(atan2(cpos.y - pos.y, cpos.x - pos.x));
+				newAng = contactAng + (contactAng - oldAdjst);
+				c.velocity = vecF(toRect(vp.x - bumperLoss, newAng));
+				
+				gSound("hitBumper").setPitch( float(randRange(80, 120)) / 100 );
+				gSound("hitBumper").play();
+			}
+			
+			/* Check if ball collides with any other ball */
+			for (int bb = b + 1; bb < numBalls; ++bb) {
+				if (!balls[bb].isActive)
+					continue;
+				float radius = balls[bb].s.gGB().width / 2;
+				vecF pos = balls[bb].s.gP();
+				hyp1 = hyp(cpos, pos);
+				if (hyp1 > cradius + radius)
+					continue;  // No collision
+				
+				s.sP(savePosns[b]);
+				cpos = s.gP();
+				if (hyp(cpos, pos) <= cradius + radius)
+					balls[bb].s.sP(savePosns[bb]);
+
+				/* Sphere collision math to determine both balls'
+				 * new velocities with differences of mass factored
+				 * in.
+				 */
+				bx1 = balls[bb].velocity.x;
+				by1 = balls[bb].velocity.y;
+				vecF bp1 = toRPolar(balls[bb].velocity);
+				phi = atan2(pos.y - cpos.y, pos.x - cpos.x);
+				float ag = cos(ap1.y - phi) * ap1.x;
+				float ah = sin(ap1.y - phi) * ap1.x;
+				float bg = cos(bp1.y - phi) * bp1.x;
+				float bh = sin(bp1.y - phi) * bp1.x;
+
+				float mA = balls[b].mass;
+				float mB = balls[bb].mass;
+				float mdifAB = mA - mB;
+				float mdifBA = mB - mA;
+				float msum = mA + mB;
+				float ag2 = (mdifAB * ag + 2 * mB * bg) / msum;
+				float bg2 = (mdifBA * bg + 2 * mA * ag) / msum;
+
+				float magA = hyp(ah, ag2);
+				float dirA = atan2(ah, ag2) + phi;
+				float magB = hyp(bh, bg2);
+				float dirB = atan2(bh, bg2) + phi;
+				
+				balls[b].velocity = vecF(toRRect(magA - bumperLoss, dirA));
+				balls[bb].velocity = vecF(toRRect(magB - bumperLoss, dirB));
+				
+				gSound("ballsCollide").play();
+			} //end for bb
+			
+			/* Check for contact with borders of the screen */
+			vecF pos = s.gP();
+			bool hitWall = false;
+			if (pos.x > scrw) {
+				s.sP(scrw, pos.y);
+				hitWall = true;
+			}
+			else if (pos.x < 0) {
+				s.sP(0, pos.y);
+				hitWall = true;
+			}
+			if (hitWall) {
+				balls[b].velocity.x *= -1;
+				vecF vp = toPolar(balls[b].velocity);
+				vp.x -= bumperLoss;
+				balls[b].velocity = toRect(vp);
+			}
+			/* Make the letter catch up with the new ball position */
+			balls[b].txt.sP(balls[b].s.gP() - vecF(15, 30));
+	  
+			if (balls[b].s.gGB().intersects(FloatRect(0, scrh + 1, scrw, 5))) {
+				endGame();
+				return;
+			}
+		} //end for b
+	} //end for i
+} // end update()
+
+void LetterInvadersState::draw ()
+{
+	RenderWindow* w = stateManager->getContext()->win->getRenderWindow();
+	w->draw(bkgd);
+	for (auto& obj : bumpers) {
+		w->draw(obj.s);
+	}
+	for (auto& b : balls) {
+		w->draw(b.s);
+		if (b.isActive)
+			w->draw(b.txt);
+	}
+	w->draw(txt);
+	if (drawBeam)
+		w->draw(beam);
+	w->draw(ground);
+	w->draw(lWall);
+	w->draw(rWall);
 }
 
-void LetterInvadersState::deactivate () {
-    
-    auto w = stateManager->getContext()->win->getRenderWindow();
-    w->setMouseCursorVisible(true);
-    auto gui = stateManager->getContext()->gui;
-    gui->get("scores")->setVisible(false);
-    
-    gui->removeAllWidgets();
-}
-
-void LetterInvadersState::activate () {
-    
-    auto w = stateManager->getContext()->win->getRenderWindow();
-    w->setMouseCursorVisible(false);
-        
-    reset();
-}
-
-void LetterInvadersState::setUpHighScores () {
-
+void LetterInvadersState::setUpHighScores ()
+{
+	string whichFile = "liscores.txt";
+	if (MainMenuState::playerName == "Ravenna")
+		whichFile = "liscores-rav.txt";
+	else if (MainMenuState::playerName == "Laith")
+		whichFile = "liscores-lai.txt";
     ifstream scores {
-        "liscores.txt"
+		Resources::executingDir() / "resources" / whichFile
     };
-    string line;
-    while (getline(scores, line)) {
-        HighScore hs;
-        stringstream ss(line);
-        ss >> hs.score >> hs.player >> hs.date >> hs.level;
-        topTen.push_back(hs);
-    }
-    scores.close();
+	if (scores.is_open()) {
+		topTen.clear();
+		string line;
+		while (getline(scores, line)) {
+			HighScore hs;
+			stringstream ss(line);
+			ss >> hs.score >> hs.player >> hs.date >> hs.level;
+			topTen.push_back(hs);
+		}
+		scores.close();
+	}
 
-    auto gui = stateManager->getContext()->gui;
     auto p = tgui::Panel::create();
-    p->setSize(700, 700);
-    p->setPosition(350, 100);
+    p->setSize(800, 700);
+	p->setPosition(scrcx - (p->getSize().x / 2), scrcy - (p->getSize().y / 2));
     gui->add(p, "scores");
     auto l = tgui::Label::create();
     l->setOrigin(.5, .5);
     l->setPosition("50 % ", 50);
     l->setTextSize(48);
-    l->setText("HIGH SCORES!");
+    l->setText("GREATEST HEROES");
     p->add(l, "scoreslabel");
     auto vl = tgui::VerticalLayout::create();
     vl->setSize("90 % ", "80 % ");
@@ -113,100 +405,17 @@ void LetterInvadersState::setUpHighScores () {
     p->setVisible(false);
 }
 
-void LetterInvadersState::loadTextures () {
-    
-    texs.clear();
-    texs.reserve(10);
-    
-    Texture tex;
-    string basePath = "resources/";
-    int sz = int(texList.size());
-    for (int i = 0; i <  sz ; ++i) {
-        string fileName = basePath + texList[i];
-        loadByMethod(tex, fileName);
-        texs.push_back(tex);
-    }
-    texs[0].setRepeated(true);
-}
-
-void LetterInvadersState::loadSounds () {
-    
-    string path = "resources/";
-	forNum(numSounds) {
-        loadByMethod(buffers[i], path + soundFileList[i]);
-        sounds[i].setBuffer(buffers[i]);
-    }
-    sounds[0].setVolume(25);
-	
-	levelUpBuf.loadFromFile("resources/Bell3.wav");
-	levelUpSnd.setBuffer(levelUpBuf);
-}
-
-void LetterInvadersState::onCreate () {
-    
-    EventManager* evMgr = stateManager->getContext()->eventManager;
-    evMgr->addCallback(StateType::tLetterInvaders, "Mouse_Left", 
-            &LetterInvadersState::mouseClick, this);
-    evMgr->addCallback(StateType::tLetterInvaders, "Mouse_Left_Up", 
-            &LetterInvadersState::mouseRelease, this);
-    evMgr->addCallback(StateType::tLetterInvaders, "Key_Escape", 
-            &LetterInvadersState::onEscape, this);
-
-
-    loadByMethod(gLetFont, "resources/Futura.ttc");
-    loadByMethod(font, "resources/Tahoma.ttf");
-  
-    loadTextures();
-    loadSounds();
-    
-    gui = stateManager->getContext()->gui;
-    
-    bkgd.setTexture(texs[0]);
-    bkgd.setTextureRect(IntRect(0, 0, ScrW * 2, ScrW * 2));
-    cO(bkgd);
-    bkgd.setPosition(ScrCX, ScrCY);
-    
-    bkgdFrame.setTexture(texs[3]);
-    bkgdFrame.sP(-550, -550);
-    
-    beam.setFillColor(Color(255, 255, 255, 60));
-    beam.setSize(vecf(0, 5));
-    beam.setOrigin(0, 2);
-    beam.sP(ScrCX, ScrH);
-    
-	curLetterSet = sets[0];
-	curSetLabel = setsLabels[0];
-    txt = Text("", font, 20);
-    txt.setPosition(10, 80);
-    txt.setOutlineColor(Color(40, 40, 40));
-    txt.setOutlineThickness(1);
-    txt.setFillColor(Color(210, 210, 210));
-    txt.setString(
-                  "SCORE: " + tS(curScore) + "\n\n" +
-                  "LEVEL: " + tS(curLevel) +
-				  "\n\n" + curSetLabel);
-
-    
-    animator.addAnimation("swirlexit", &swirlExit, seconds(1.f));
-    animator.playAnimation("swirlexit");
-       
-    setUpHighScores();
-
-    reset();
-} //end onCreate
-
-
-
-void LetterInvadersState::reset () {
-
+void LetterInvadersState::reset ()
+{
     bumpers.clear();
     balls.clear();
     
     running = false;
     gameOver = false;
-    auto gui = stateManager->getContext()->gui;
-    gui->get("scores")->setVisible(false);
-    stateManager->getContext()->win->getRenderWindow()->setMouseCursorVisible(false);
+	auto hscorePtr = gui->get("scores");
+	if (hscorePtr)
+		hscorePtr->setVisible(false);
+    renWin()->setMouseCursorVisible(false);
 
     gravAccel = initGrav;
     bumperLoss = initBumperLoss;
@@ -216,7 +425,7 @@ void LetterInvadersState::reset () {
     curLevel = 1;
     spawnInterval = initSpawnInterval;
     lastSpawnTime = Time::Zero;
-    bkgd.setColor(randomColor());
+    bkgd.setColor(randomColorMaxSat(80));
     
     placeBumpers();
     beam.setSize(vecf(0, 5));
@@ -224,268 +433,24 @@ void LetterInvadersState::reset () {
 }
 
 
-void LetterInvadersState::placeBumpers () {
-
+void LetterInvadersState::placeBumpers ()
+{
     forNum(numBumperColumns * numBumperRows) {
-        Bumper b { &texs[2] };
-        float cellW = (ScrW - wallThickness * 2) / numBumperColumns;
-        float cellH = (ScrH - upperDeadZone - lowerDeadZone) / numBumperRows;
+        Bumper b;
+        float cellW = (scrw - wallThickness * 2) / numBumperColumns;
+        float cellH = (scrh - upperDeadZone - lowerDeadZone) / numBumperRows;
         auto x = i % numBumperColumns * cellW + wallThickness + randRange(0, int(cellW - 50));
         auto y = i / numBumperColumns * cellH + upperDeadZone + randRange(0, int(cellH - 50));
-        b.s.sP(x, y);
-
+        b.s.sP({x, y});
         bumpers.push_back(b);
     }
 }
 
-
-void LetterInvadersState::draw () {
-    
-    RenderWindow* w = stateManager->getContext()->win->getRenderWindow();
-    w->draw(bkgd);
-    for (auto& obj : bumpers) {
-        w->draw(obj.s);
-    }
-    for (auto& b : balls) {
-        w->draw(b.s);
-        if (b.isActive)
-            w->draw(b.txt);
-    }
-    w->draw(txt);
-    if (drawBeam)
-        w->draw(beam);
-    if (!stateManager->getContext()->win->isStretched())
-        w->draw(bkgdFrame);
-}
-
-
-
-void LetterInvadersState::update (const Time& elapsed) {
-
-    float factor = cos(toRad(bkgdScaleDegree)) * .3 + 1;
-    bkgd.setScale(factor, factor);
-    bkgd.rotate(.05);
-    bkgdScaleDegree += .1;
-    if (bkgdScaleDegree >= 360)
-        bkgdScaleDegree -= 360;
-  
-    auto gui = stateManager->getContext()->gui;
-    auto sc = gui->get("scores");
-    if (sc->isVisible() && sc->isFocused()) {
-        return;
-    }
- 
-	txt.setString( "SCORE: " + tS(curScore) + "\n\n" +
-				  "LEVEL: " + tS(curLevel) +
-				  "\n\n" + curSetLabel);
-	
-    if (!running || gameOver) return;
-
-    animator.update(animClock.restart());
-    
-    for (auto itr = balls.begin(); itr != balls.end(); ++itr) {
-        Ball& b = *itr;
-        if (b.isActive && Keyboard::isKeyPressed(b.key)) {
-            destroyBall(b);
-            fadeTime = elapsed + seconds(.15);
-        }
-        
-            /* Currently only using the animator to make the ball
-             * swirl around off of the screen after being shot
-             */
-        if (!b.isActive) {
-            animator.animate(b);
-        }
-    }
-
-    auto p = find_if(balls.begin(), balls.end(),
-                     [&](auto& x) { return !x.isActive && x.s.gP().y <= -15; });
-    if (p != balls.end())
-        balls.erase(p);
-
-    if (elapsed.asSeconds() > lastSpawnTime.asSeconds() + spawnInterval)
-        spawnBall(elapsed);
-
-    if (elapsed > fadeTime)
-        drawBeam = false;
-
-    
-        // COLLISION LOGIC
-
-    float phi = 0, hyp1 = 0;
-    float ax1, ay1, bx1, by1;
-
-    float highSpd = 0;
-    int numBalls = int(balls.size());
-    for (int b = 0; b < numBalls; ++b) {
-        if (!balls[b].isActive)
-            continue;
-        balls[b].velocity.y += gravAccel;
-        vecF vp = toRPolar(balls[b].velocity);
-        if (vp.x > highSpd)
-            highSpd = vp.x;
-    }
-    highSpd = ceil(highSpd);
-    vector<vecF> savePosns(numBalls);
-    for (int i = 0; i <  highSpd; ++i) {
-        for (int b = 0; b < numBalls; ++b) {
-            if (!balls[b].isActive)
-                continue;
-            savePosns[b] = balls[b].s.gP();
-            balls[b].s.move(balls[b].velocity / highSpd);
-        }
-        for (int b = 0; b < numBalls; ++b) {
-            if (!balls[b].isActive)
-                continue;
-            VSprite& c = balls[b];
-            Sprite& s = balls[b].s;
-            ax1 = c.velocity.x;
-            ay1 = c.velocity.y;
-            vecF ap1 = toRPolar(c.velocity);
-            float cradius = s.gGB().width / 2;
-            vecF cpos = s.gP();
-            
-            vecF vp = toPolar(c.velocity);
-            float oldAdjst = czdg(vp.y + 180);
-            float newAng, contactAng;
-            for (auto& obj : bumpers) {
-                float radius = obj.s.gGB().width / 2;
-                vecF pos = obj.s.gP();
-                if (hyp(cpos, pos) > cradius + radius)
-                    continue;
-                s.sP(savePosns[b]);
-                cpos = s.gP();
-                contactAng = toDeg(atan2(cpos.y - pos.y, cpos.x - pos.x));
-                newAng = contactAng + (contactAng - oldAdjst);
-                c.velocity = vecF(toRect(vp.x - bumperLoss, newAng));
-                
-                sounds[0].setPitch( float(randRange(80, 120))/100 );
-                sounds[0].play();
-            }
-            
-            for (int bb = b + 1; bb < numBalls; ++bb) {
-                if (!balls[bb].isActive)
-                    continue;
-                float radius = balls[bb].s.gGB().width / 2;
-                vecF pos = balls[bb].s.gP();
-                hyp1 = hyp(cpos, pos);
-                if (hyp1 > cradius + radius)
-                    continue;  // No collision
-                s.sP(savePosns[b]); cpos = s.gP();
-                if (hyp(cpos, pos) <= cradius + radius) balls[bb].s.sP(savePosns[bb]);
-
-                bx1 = balls[bb].velocity.x;
-                by1 = balls[bb].velocity.y;
-                vecF bp1 = toRPolar(balls[bb].velocity);
-                phi = atan2(pos.y - cpos.y, pos.x - cpos.x);
-                float ag = cos(ap1.y - phi) * ap1.x;
-                float ah = sin(ap1.y - phi) * ap1.x;
-                float bg = cos(bp1.y - phi) * bp1.x;
-                float bh = sin(bp1.y - phi) * bp1.x;
-
-                float mA = balls[b].mass;
-                float mB = balls[bb].mass;
-                float mdifAB = mA - mB;
-                float mdifBA = mB - mA;
-                float msum = mA + mB;
-                float ag2 = (mdifAB * ag + 2 * mB * bg) / msum;
-                float bg2 = (mdifBA * bg + 2 * mA * ag) / msum;
-
-                float magA = hyp(ah, ag2);
-                float dirA = atan2(ah, ag2) + phi;
-                float magB = hyp(bh, bg2);
-                float dirB = atan2(bh, bg2) + phi;
-                
-                balls[b].velocity = vecF(toRRect(magA - bumperLoss, dirA));
-                balls[bb].velocity = vecF(toRRect(magB - bumperLoss, dirB));
-                
-                sounds[1].play();
-            } //end for bb
-            
-            vecF pos = s.gP();
-            bool hitWall = false;
-            if (pos.x > ScrW) {
-                s.sP(ScrW, pos.y);
-                hitWall = true;
-            }
-            else if (pos.x < 0) {
-                s.sP(0, pos.y);
-                hitWall = true;
-            }
-            if (hitWall) {
-                balls[b].velocity.x *= -1;
-                vecF vp = toPolar(balls[b].velocity);
-                vp.x -= bumperLoss;
-                balls[b].velocity = toRect(vp);
-            }
-
-            balls[b].txt.sP(balls[b].s.gP() - vecF(15, 30));
-      
-            if (balls[b].s.gGB().intersects(FloatRect(0, ScrH + 1, ScrW, 5))) {
-                endGame();
-                return;
-            }
-        } //end for b
-    } //end for i
-} // end update()
-
-
-
-void LetterInvadersState::mouseClick (EventDetails* det) {
-    
-    vecI mp = det->mouse;
-    for (auto& obj : bumpers) {
-        if (!(obj.s.gGB().contains(mp.x, mp.y)))
-            continue;
-        obj.clickedOn = true;
-        gClickedOn = &obj;
-        return;
-    }
-}
-
-void LetterInvadersState::mouseRelease (EventDetails* det) {
-    
-    if (gClickedOn)
-        gClickedOn->clickedOn = false;
-    gClickedOn = nullptr;
-}
-
-void LetterInvadersState::onKeyPress (Keyboard::Key k) {
-    
-	vector<Keyboard::Key> setsKeys {
-		Keyboard::Num1, Keyboard::Num2, Keyboard::Num3, Keyboard::Num4,
-		Keyboard::Num5, Keyboard::Num6, Keyboard::Num7, Keyboard::Num8,
-		Keyboard::Num9
-	};
-	forNum(9) {
-		if (k == setsKeys[i]) {
-			curLetterSet = sets[i];
-			curSetLabel = setsLabels[i];
-			return;
-		}
-	}
-	
-    switch(k) {
-            
-        case Keyboard::Y:
-			if (!running)
-				reset();
-			break;
-        
-        case Keyboard::Space:
-            running = !running;
-			break;
-				
-        default:
-            break;
-    }
-}
-
-
-void LetterInvadersState::spawnBall (Time tm) {
-
-    string let(1, toupper( curLetterSet[randRange(0, int(curLetterSet.length() - 1))] ) );
-    Ball b { &texs[1], let, randElemVal(ballColors), };
+void LetterInvadersState::spawnBall (Time tm)
+{
+    string let(1, toupper(curLetterSet[randRange(0, int(curLetterSet.length() - 1))] ) );
+    Ball b {let, randElemVal(ballColors)};
+	/* Make sure the ball doesn't spawn on top of an existing bouncing ball */
     bool openSpot;
     do {
         openSpot = true;
@@ -502,9 +467,8 @@ void LetterInvadersState::spawnBall (Time tm) {
     lastSpawnTime = tm;
 }
 
-
-void LetterInvadersState::destroyBall (Ball& b) {
-    
+void LetterInvadersState::destroyBall (Ball& b)
+{
     curScore += 1;
     if (!(curScore % 10)) {
         ++curLevel;
@@ -513,45 +477,65 @@ void LetterInvadersState::destroyBall (Ball& b) {
         else if (spawnInterval > .4)
             spawnInterval -= .1;
         gravAccel = min(2.5, gravAccel + .01);
-        bkgd.setColor(randomColor());
-		levelUpSnd.play();
+        bkgd.setColor(randomColorMaxSat(80));
+		gSound("levelUp").play();
 		sleep(seconds(.2));
-		levelUpSnd.play();
+		gSound("levelUp").play();
 		sleep(seconds(.2));
-		levelUpSnd.play();
+		gSound("levelUp").play();
     }
-    intvec iv {2, 4, 5};
-    int i = randElemVal(iv);
-    sounds[i].setVolume(randRange(65, 100));
-    sounds[i].play();
+    strvec sv {"zap1", "zap2", "zap3"};
+    string key = randElemVal(sv);
+    gSound(key).setVolume(randRange(65, 100));
+    gSound(key).play();
     b.isActive = false;
     b.blastPos = b.s.gP();
     animator.playAnimation("swirlexit");
+	
+	/* Create a "laser beam" zapping the ball */
     auto q = beam.gP() - b.blastPos;
     beam.setSize(vecf(toPolar(q).x, beam.getSize().y));
     beam.setRotation(toPolar(q).y - 180);
     drawBeam = true;
-
 }
 
-void LetterInvadersState::endGame () {
-    
+/* Top-level function */
+void swirlExit (Ball& b, float p)
+{
+	vecf dest {b.blastDestX, -100};
+	vecf vecDif = dest - b.blastPos;
+	float hypot = hyp(vecDif);
+	float radius = 80;
+	float ratio = radius / hypot;
+	vecf offset = vecDif * ratio;
+	vecf initAxis = b.blastPos + offset;
+	vecDif = dest - initAxis;
+	vecf axis = initAxis + vecDif * p;
+	vecf offs2 {b.blastPos - initAxis};
+	float initRads = toPolar(offs2).y;
+	float rads = initRads + 360 * (fmod(p, 5) / .2);
+	vecf v = toRect(radius, rads);
+	b.s.sP(axis + v);
+}
+
+void LetterInvadersState::endGame ()
+{
     running = false;
     gameOver = true;
-    sounds[3].play();
+    gSound("gameOver").play();
     showHighScores(curScore, curLevel);
 }
 
-void LetterInvadersState::showHighScores (int score, int level) {
-
-    stateManager->getContext()->win->getRenderWindow()->setMouseCursorVisible(true);
-    auto gui = stateManager->getContext()->gui;
-    auto sc = gui->get<tgui::Panel>("scores");
-    sc->setVisible(true);
+void LetterInvadersState::showHighScores (int score, int level)
+{
+    renWin()->setMouseCursorVisible(true);
+    auto scoresPtr = gui->get<tgui::Panel>("scores");
+    if (!scoresPtr)
+		return;
+	
+	scoresPtr->setVisible(true);
     if (score >= topTen[9].score) {
-//        boost::gregorian::date d(boost::gregorian::day_clock::local_day());
-//        string date = tS(d.month()) + "/" + tS(d.day()) + "/" + tS(d.year());
-		string date {}; ////
+		string date {LocalTime().slashDate()};
         HighScore hs {score, level, date};
         auto p = find_if(topTen.begin(), topTen.end(),
                          [&](auto x) { return hs.score >= x.score; });
@@ -572,24 +556,33 @@ void LetterInvadersState::showHighScores (int score, int level) {
                 eb->setEnabled(false);
             }
         }
-        sc->setFocused(true);
+		scoresPtr->setFocused(true);
     }
     else {
-        sc->setFocused(false);
+		scoresPtr->setFocused(false);
         for (auto& e : eboxes) {
             e->setFocused(false);
             e->setEnabled(false);
         }
     }
-
 }
 
-void LetterInvadersState::enterNewScore (tgui::String str) {
-    
-    string s = str.toStdString();
+void LetterInvadersState::enterNewScore (tgui::String str)
+{
+	string s = str.toStdString();
+	/* Truncate the entered name if it's too long */
+	if (s.length() > 18)
+		s.resize(18);
+	/* Get rid of potential spaces in the entered name
+	 * just to keep our parsing simple.
+	 */
+	for (auto& ch : s)
+		if (ch == ' ')
+			ch = '-';
+	
     forNum(10) {
         if (topTen[i].player == "") {
-            topTen[i].player = s == "" ? "Nameless One" : s;
+            topTen[i].player = s == "" ? "NamelessOne" : s;
             eboxes[i]->setText(highScoreToText(topTen[i]));
             eboxes[i]->setEnabled(false);
             gui->get("scores")->setFocused(false);
@@ -598,17 +591,22 @@ void LetterInvadersState::enterNewScore (tgui::String str) {
     topTenToFile();
 }
 
-string LetterInvadersState::highScoreToText (HighScore &hs) {
-    
+string LetterInvadersState::highScoreToText (HighScore &hs)
+{
     stringstream ss {};
-    ss << "  " << std::left << std::setw(10) << tS(hs.score) << std::setw(20) << hs.player << std::setw(10)
-                << hs.date << std::setw(10) << tS(hs.level);
+    ss << "  " << std::left << std::setw(10) << tS(hs.score) << std::setw(20)
+		<< hs.player << std::setw(10) << hs.date << std::right << std::setw(10) << tS(hs.level);
     return ss.str();
 }
 
-void LetterInvadersState::topTenToFile () {
-    
-    ofstream f { "liscores.txt", ios_base::trunc};
+void LetterInvadersState::topTenToFile ()
+{
+	string whichFile = "liscores.txt";
+	if (MainMenuState::playerName == "Ravenna")
+		whichFile = "liscores-rav.txt";
+	else if (MainMenuState::playerName == "Laith")
+		whichFile = "liscores-lai.txt";
+    ofstream f {Resources::executingDir() / "resources" / whichFile, ios_base::trunc};
     if (!f.is_open())
         return;
     for (auto& t : topTen) {
@@ -618,21 +616,7 @@ void LetterInvadersState::topTenToFile () {
     f.close();
 }
 
-const vector<string> LetterInvadersState::texList {
-    "graybkgd.png",     // 0
-    "grayball.png",     // 1
-    "bumper.png",       // 2
-    "bkgdFrame.png"     // 3
-};
-
-const vector<string> LetterInvadersState::soundFileList {
-    "bumperhit.wav",    // 0
-    "thump1.wav",       // 1
-    "explosion1.wav",   // 2
-    "gameover4.wav",    // 3
-    "explosion2.wav",   // 4
-    "hurt5.wav"         // 5
-	
-//	"Bell3.wav"
-    // Update `numSounds` if adding to list
-};
+RenderWindow* LetterInvadersState::renWin ()
+{
+	return stateManager->getContext()->win->getRenderWindow();
+}

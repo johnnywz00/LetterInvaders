@@ -96,6 +96,7 @@ EditBox {
     DefaultTextColor            = rgb(120, 120, 120);
     CaretColor                  = rgb(110, 110, 255);
     Padding                     = (6, 4, 6, 4);
+    Font                        = "fonts/Courier New Bold.ttf";
 }
 
 FileDialog {
@@ -132,6 +133,7 @@ FileDialog {
 Label {
     TextColor = rgb(190, 190, 190);
     Scrollbar = &Scrollbar;
+    Font = "fonts/TwoForJuanNF.otf";
 }
 
 ListBox {

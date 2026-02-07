@@ -1,3 +1,8 @@
+
+/* This file based on work by Raimondas Pupius
+ * in SFML Game Development by Example
+ */
+
 #ifndef JWZ_STATEMANAGER
 #define JWZ_STATEMANAGER
 
@@ -8,27 +13,23 @@
 #include "mainmenu.hpp"
 
 
-////////////////////////////////////////////////////////////////
-
-enum class StateType {
-    
+enum class StateType
+{
 	SphereCollision = 1,
     MainMenu,
     tLetterInvaders
 };
-	
+
+
 using stateVec = vector<pair<StateType, BaseState*>>;
 using stateTypeVec = vector<StateType>;
 using StateFactory = unordered_map<StateType, function<BaseState* (void)>>;
 
-////////////////////////////////////////////////////////////////
 
-
-class StateManager {
-   
+class StateManager
+{
     friend class SFGameWindow;
 public:
-    
     StateManager (SharedContext* ctx);
     
     ~StateManager ();
@@ -45,8 +46,8 @@ public:
     
     void remove (const StateType& typ) { toRemove.push_back(typ); }
     
-    void processRequests () {
-        
+    void processRequests ()
+	{
         while (toRemove.begin() != toRemove.end()) {
             removeState(*toRemove.begin());
             toRemove.erase(toRemove.begin());
@@ -54,15 +55,14 @@ public:
     }
         
 private:
-    
     void createState (const StateType& typ);
     
     void removeState (const StateType& typ);
     
     template<class T>
-    void registerState (const StateType& typ) {
-        
-        stateFactory[typ] = [this]()->BaseState* { return new T(this); } ;
+    void registerState (const StateType& typ)
+	{
+        stateFactory[typ] = [this]()->BaseState* { return new T(this); };
     }
     
     SharedContext*	context;
@@ -71,7 +71,4 @@ private:
     StateFactory	stateFactory;
 };
 
-
-
-	
 #endif

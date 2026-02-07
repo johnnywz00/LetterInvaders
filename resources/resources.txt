@@ -1,0 +1,32 @@
+@images
+icon.png 		icon
+bumper.png		bumper
+grayball.png	ball
+squareblock.png	block
+wheel.png		wheel
+
+#repeated
+graybkgd.png	bkgd		repeat
+wall.png	wall		repeat
+ground.png	ground		repeat
+
+@fonts
+Futura.ttc			ball
+Monaco.ttf			debug
+Tahoma.ttf			stats
+TestarossaNF.otf	menuButton
+TwoForJuanNF.otf	menuTitle
+
+@sounds
+Bell3.wav		levelUp
+boing1.wav		boing1
+boing2.wav		boing2
+boing3.wav		boing3
+boing4.wav		boing4
+bumperhit.wav	hitBumper
+explosion1.wav	zap1
+explosion2.wav	zap2
+hurt5.wav		zap3
+gameover4.wav	gameOver
+lose5.wav		wheelFall
+thump1.wav		ballsCollide

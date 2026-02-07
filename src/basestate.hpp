@@ -1,3 +1,8 @@
+
+/* This file based on work by Raimondas Pupius
+ * in SFML Game Development by Example
+ */
+
 #ifndef BASE_STATE_H
 #define BASE_STATE_H
 
@@ -8,17 +13,17 @@ using namespace sf;
 class StateManager;
 
 
-class BaseState {
-    
+class BaseState
+{
 	friend class StateManager;
 public:
+    BaseState (StateManager* mgr)
+		: stateManager(mgr)
+        , transparent(false)
+        , transcendent(false)
+	{ }
     
-    BaseState (StateManager* mgr) :
-        stateManager(mgr),
-        transparent(false),
-        transcendent(false) { }
-    
-    virtual ~BaseState () { };
+    virtual ~BaseState () { }
     
     virtual void onCreate () = 0;
     
@@ -36,23 +41,21 @@ public:
     
     void setTransparent (const bool& trans) { transparent = trans; }
     
-    bool isTransparent () const{ return transparent; }
+    bool isTransparent () const { return transparent; }
     
     void setTranscendent (const bool& trans) { transcendent = trans; }
     
-    bool isTranscendent () const{ return transcendent; }
+    bool isTranscendent () const { return transcendent; }
     
     StateManager* getStateManager () { return stateManager; }
     
     View& getView () { return view; }
 
 protected:
-    
     StateManager*	stateManager;
     View			view;
     bool 			transparent,
                     transcendent;
 };
-	
-	
+
 #endif

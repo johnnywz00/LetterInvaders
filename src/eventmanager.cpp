@@ -1,72 +1,34 @@
 /*
- * This file is mostly copy-paste (with naming changes)
+ * This file is mostly copy-paste (with naming and formatting changes)
  * from Raimondas Pupius' SFML Game Development by Example
  */
 
 #include "eventmanager.hpp"
 
 
-EventManager::EventManager () :
-        hasFocus(true) {
-            
+EventManager::EventManager ()
+	: hasFocus(true)
+{
     loadBindings();
 }
 
-EventManager::~EventManager () {
-    
+EventManager::~EventManager ()
+{
 	for (auto& itr : bindings) {
 		delete itr.second;
 		itr.second = nullptr;
     }
 }
 
-void EventManager::loadBindings () {
-    
-	string delimiter = ":";
-	std::ifstream bindings;
-	bindings.open(bindingsFilename);
-	if (!bindings.is_open()) {
-		cout << "Bindings couldn't be loaded! \n";
-		return;
-    }
-	string line;
-	while (std::getline(bindings, line)) {
-		std::stringstream keystream(line);
-		string callbackName;
-		keystream >> callbackName;
-		Binding* bind = new Binding(callbackName);
-		while (!keystream.eof()) {
-			string keyval;
-			keystream >> keyval;
-			int start = 0;
-			int end = int( keyval.find(delimiter) );
-			if (end == string::npos) {
-				delete bind;
-				bind = nullptr;
-				break;
-            }
-			EventType type = EventType(stoi(keyval.substr(start, end-start)));
-			int code = stoi(keyval.substr(end + delimiter.length(), 
-					keyval.find(delimiter, end + delimiter.length())));
-			EventInfo evInf;
-			evInf.code = code;
-			bind->bindEvent(type, evInf);
-        }
-		if (!addBinding(bind))
-            delete bind;
-		bind = nullptr;
-    }
-	bindings.close();
-}
-	
-bool EventManager::addBinding (Binding* bdg) {
-    
+bool EventManager::addBinding (Binding* bdg)
+{
 	if (bindings.find(bdg->name) != bindings.end())
         return false;
 	return bindings.emplace(bdg->name, bdg).second;
 }
 	
-bool EventManager::removeBinding (string name) {
+bool EventManager::removeBinding (string name)
+{
 	auto itr = bindings.find(name);
 	if (itr == bindings.end())
         return false;
@@ -75,8 +37,8 @@ bool EventManager::removeBinding (string name) {
 	return true;
 }
 
-void EventManager::handleEvent (Event& evt) {
-    
+void EventManager::handleEvent (Event& evt)
+{
 	for (auto& bdg : bindings) {
 		Binding* bind = bdg.second;
 		for (auto& bdgEvt : bind->events) {
@@ -118,8 +80,8 @@ void EventManager::handleEvent (Event& evt) {
     }
 }
 
-void EventManager::update () {
-    
+void EventManager::update ()
+{
 	if (!hasFocus)
         return;
 	for (auto& bdg : bindings) {
@@ -163,5 +125,44 @@ void EventManager::update () {
 		bind->ct = 0;
 		bind->details.clear();
     }
+}
+	
+void EventManager::loadBindings ()
+{
+	string delimiter = ":";
+	std::ifstream bindings;
+	bindings.open(Resources::executingDir() / "resources" / bindingsFilename);
+	if (!bindings.is_open()) {
+		cout << "Bindings couldn't be loaded! \n";
+		return;
+	}
+	string line;
+	while (std::getline(bindings, line)) {
+		std::stringstream keystream(line);
+		string callbackName;
+		keystream >> callbackName;
+		Binding* bind = new Binding(callbackName);
+		while (!keystream.eof()) {
+			string keyval;
+			keystream >> keyval;
+			int start = 0;
+			int end = int( keyval.find(delimiter) );
+			if (end == string::npos) {
+				delete bind;
+				bind = nullptr;
+				break;
+			}
+			EventType type = EventType(stoi(keyval.substr(start, end-start)));
+			int code = stoi(keyval.substr(end + delimiter.length(),
+					keyval.find(delimiter, end + delimiter.length())));
+			EventInfo evInf;
+			evInf.code = code;
+			bind->bindEvent(type, evInf);
+		}
+		if (!addBinding(bind))
+			delete bind;
+		bind = nullptr;
+	}
+	bindings.close();
 }
 	
