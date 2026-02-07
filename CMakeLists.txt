@@ -23,7 +23,7 @@ FetchContent_MakeAvailable(SFML)
 FetchContent_Declare(
     TGUI
     GIT_REPOSITORY https://github.com/texus/TGUI.git
-    GIT_TAG        latest-stable
+    GIT_TAG 1.6.1
 )
 FetchContent_MakeAvailable(TGUI)
 
@@ -31,7 +31,7 @@ FetchContent_MakeAvailable(TGUI)
 FetchContent_Declare(
     thor
     GIT_REPOSITORY https://github.com/Bromeon/Thor.git
-    GIT_TAG        v2.2
+    GIT_TAG v2.0
 )
 FetchContent_MakeAvailable(thor)
 
