@@ -23,7 +23,7 @@ FetchContent_MakeAvailable(SFML)
 FetchContent_Declare(
     TGUI
     GIT_REPOSITORY https://github.com/texus/TGUI.git
-    GIT_TAG 1.6.1
+    GIT_TAG v1.6.1
 )
 FetchContent_MakeAvailable(TGUI)
 
