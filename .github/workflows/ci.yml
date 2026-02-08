@@ -26,23 +26,23 @@ jobs:
       # Register all of the platforms we're building for
       matrix:
         include:
-          - os: macos-latest
-            cpp_compiler: clang++
+#          - os: macos-latest
+#            cpp_compiler: clang++
             # If building Mac version as an .app bundle, using zip compression
             # can result in unnecessary duplication of dependency files, causing
             # significant bloat in the product size. Best keep as tar
-            archive_type: tar
-            archive_name: ${{ vars.PROJNAME }}-macos-arm64.tar.gz
+ #           archive_type: tar
+ #           archive_name: ${{ vars.PROJNAME }}-macos-arm64.tar.gz
             
-          - os: ubuntu-latest
-            cpp_compiler: g++
-            archive_type: tar
-            archive_name: ${{ vars.PROJNAME }}-ubuntu-latest-x86_64.tar.gz
+ #         - os: ubuntu-latest
+ #           cpp_compiler: g++
+ #           archive_type: tar
+ #           archive_name: ${{ vars.PROJNAME }}-ubuntu-latest-x86_64.tar.gz
             
-          - os: [ubuntu-22.04]
-            cpp_compiler: g++
-            archive_type: tar
-            archive_name: ${{ vars.PROJNAME }}-ubuntu22-x86_64.tar.gz
+ #         - os: [ubuntu-22.04]
+ #           cpp_compiler: g++
+ #           archive_type: tar
+ #           archive_name: ${{ vars.PROJNAME }}-ubuntu22-x86_64.tar.gz
 
           - os: windows-latest
             cpp_compiler: cl
@@ -104,7 +104,11 @@ jobs:
           cp /usr/lib/x86_64-linux-gnu/libFLAC.so.8 bin/libs/
           sudo apt-get install -y patchelf
           patchelf --set-rpath '$ORIGIN' bin/libs/libsfml-audio.so.2.6
-          
+
+      - name: WFUI
+        shell: cmd
+        run: tree /F .\_deps\tgui-build\lib
+        
       # The next two steps have to do with keeping the layout simple so
       # that no installation is required after downloading/extracting and 
       # so that the executable file can find all of its libraries and 
