@@ -30,13 +30,14 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(TGUI)
 
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+set(THOR_SHARED_LIBS ON)
 FetchContent_Declare(
     thor
     GIT_REPOSITORY https://github.com/Bromeon/Thor.git
     GIT_TAG v2.0
 )
 FetchContent_MakeAvailable(thor)
-target_compile_features(thor PRIVATE cxx_std_11)
+target_compile_options(thor PRIVATE -std=c++0x)
 
 #set(CMAKE_CXX_STANDARD 17)
 #set(CMAKE_CXX_STANDARD_REQUIRED ON)
