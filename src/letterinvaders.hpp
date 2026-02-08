@@ -4,7 +4,6 @@
 
 #include <TGUI/TGUI.hpp>
 #include <TGUI/Backend/SFML-Graphics.hpp>
-#include <Thor/Animations.hpp>
 #include "basestate.hpp"
 #include "eventmanager.hpp"
 
