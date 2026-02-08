@@ -131,7 +131,6 @@ jobs:
         # archiving step.
         run: |
           ls -la _deps/tgui-build/lib/
-          ls -la _deps/thor-build/src/
           mkdir "${{ vars.PROJNAME }}-${{ runner.os }}"
           mv bin/Release/* bin/resources "${{ vars.PROJNAME }}-${{ runner.os }}"/
           rm -rfv *.exe *.zip
@@ -142,7 +141,6 @@ jobs:
         shell: bash
         run: |
           ls -la _deps/tgui-build/lib/
-          ls -la _deps/thor-build/src/
           mkdir "${{ vars.PROJNAME }}-${{ runner.os }}"
           mv bin/* "${{ vars.PROJNAME }}-${{ runner.os }}"
 
