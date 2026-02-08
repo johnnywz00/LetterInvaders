@@ -71,8 +71,8 @@ elseif(UNIX AND NOT APPLE)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE 
-	highscore
 	zsprite resource_manager timed_event_manager jwzsfml jwzhpp
+	high_score
 	thor
 	TGUI::TGUI
 	sfml-audio sfml-graphics sfml-window sfml-system
