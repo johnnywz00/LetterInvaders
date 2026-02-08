@@ -46,10 +46,11 @@ int main (int argc, char **argv) {
      * instance to silently quit immediately by giving it a relative
      * path that it can't find.
      */
+#ifdef DEBUG
     Image img;
     if (!img.loadFromFile(iconPath))
         return EXIT_FAILURE;
-
+#endif
 	Resources::initialize(argc, argv);
 
 	Game game;
