@@ -59,6 +59,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 target_include_directories(${PROJECT_NAME} PRIVATE
 	${thor_SOURCE_DIR}/include
+	${thor_SOURCE_DIR}/extlibs/aurora/include
 	${TGUI_INCLUDE_DIR}
 )
 
