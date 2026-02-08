@@ -106,6 +106,7 @@ jobs:
           patchelf --set-rpath '$ORIGIN' bin/libs/libsfml-audio.so.2.6
 
       - name: WFUI
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
         shell: cmd
         run: tree /F .\_deps\tgui-build\
         
