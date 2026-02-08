@@ -33,15 +33,11 @@ set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 set(THOR_SHARED_LIBS ON)
 FetchContent_Declare(
     thor
-    GIT_REPOSITORY https://github.com/Bromeon/Thor.git
-    GIT_TAG v2.0
+    GIT_REPOSITORY https://github.com/johnnywz00/Thor-lite.git
+    GIT_TAG main
 )
 FetchContent_MakeAvailable(thor)
-target_compile_options(thor PRIVATE -std=c++989)
-
-#set(CMAKE_CXX_STANDARD 17)
-#set(CMAKE_CXX_STANDARD_REQUIRED ON)
-#set(CMAKE_CXX_EXTENSIONS OFF)
+target_compile_features(thor PRIVATE cxx_std_11)
 
 FetchContent_Declare(sfml_shared_headers
     GIT_REPOSITORY https://github.com/johnnywz00/SFML-shared-headers.git
