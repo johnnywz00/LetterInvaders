@@ -100,7 +100,7 @@ if(WIN32)
             $<TARGET_FILE_DIR:${PROJECT_NAME}>
 
 		COMMAND ${CMAKE_COMMAND} -E copy
-			${TGUI_BINARY_DIR}/lib/tgui.dll
+			${TGUI_BINARY_DIR}/lib/Release/tgui.dll
             $<TARGET_FILE_DIR:${PROJECT_NAME}>
 
         VERBATIM
