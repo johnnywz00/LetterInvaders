@@ -99,9 +99,9 @@ if(WIN32)
 			${sfml_shared_headers_SOURCE_DIR}/sfml-dlls/${SFML_ARCH}
             $<TARGET_FILE_DIR:${PROJECT_NAME}>
 
-		COMMAND ${CMAKE_COMMAND} -E copy
-			${TGUI_BINARY_DIR}/lib/Release/tgui.dll
-            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+#		COMMAND ${CMAKE_COMMAND} -E copy
+#			${TGUI_BINARY_DIR}/lib/Release/tgui.dll
+#            $<TARGET_FILE_DIR:${PROJECT_NAME}>
 
         VERBATIM
     )
