@@ -130,7 +130,6 @@ jobs:
         # the currently existing .zip so it gets created afresh in the
         # archiving step.
         run: |
-          ls -la _deps/tgui-build/lib/
           mkdir "${{ vars.PROJNAME }}-${{ runner.os }}"
           mv bin/Release/* bin/resources "${{ vars.PROJNAME }}-${{ runner.os }}"/
           rm -rfv *.exe *.zip
@@ -140,7 +139,6 @@ jobs:
         if: runner.os != 'Windows'
         shell: bash
         run: |
-          ls -la _deps/tgui-build/lib/
           mkdir "${{ vars.PROJNAME }}-${{ runner.os }}"
           mv bin/* "${{ vars.PROJNAME }}-${{ runner.os }}"
 
