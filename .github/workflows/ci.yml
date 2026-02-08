@@ -46,6 +46,7 @@ jobs:
 
           - os: windows-latest
             cpp_compiler: cl
+            flags: -Ax64
             archive_type: zip
             archive_name: ${{ vars.PROJNAME }}-windows-x86_64.zip
 
