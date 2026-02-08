@@ -28,7 +28,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(TGUI)
 
-
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 FetchContent_Declare(
     thor
     GIT_REPOSITORY https://github.com/Bromeon/Thor.git
