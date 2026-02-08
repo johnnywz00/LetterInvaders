@@ -49,7 +49,7 @@ void LetterInvadersState::onCreate ()
 	curLetterSet = sets[0];
 	curSetLabel = setsLabels[0];
 	txt = Text("", gFont("stats"), 20);
-	txt.setPosition(10, 80);
+	txt.setPosition(18, 80);
 	txt.setOutlineColor(Color(40, 40, 40));
 	txt.setOutlineThickness(1);
 	txt.setFillColor(Color(210, 210, 210));

@@ -106,6 +106,14 @@ if(WIN32)
 			${sfml_shared_headers_SOURCE_DIR}/sfml-dlls/${SFML_ARCH}
             $<TARGET_FILE_DIR:${PROJECT_NAME}>
 
+		COMMAND ${CMAKE_COMMAND} -E copy_directory
+			${TGUI_BINARY_DIR}/lib
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+
+ 		COMMAND ${CMAKE_COMMAND} -E copy
+            ${thor_BINARY_DIR}/src/thor.dll
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>/libs/
+ 
         VERBATIM
     )
 
@@ -120,9 +128,17 @@ elseif(APPLE)
             $<TARGET_FILE_DIR:${PROJECT_NAME}>/libs/
 
         COMMAND ${CMAKE_COMMAND} -E copy_directory
+			${TGUI_BINARY_DIR}/lib
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>/libs/
+
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${SFML_SOURCE_DIR}/extlibs/libs-osx/Frameworks
             $<TARGET_FILE_DIR:${PROJECT_NAME}>/Frameworks/
 
+ 		COMMAND ${CMAKE_COMMAND} -E copy
+            ${thor_BINARY_DIR}/src/libthor.dylib
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>/libs/
+ 
         VERBATIM
     )
 
@@ -148,6 +164,14 @@ elseif(UNIX AND NOT APPLE)
           
         COMMAND ${CMAKE_COMMAND} -E copy
             ${SFML_BINARY_DIR}/lib/libsfml-system.so.2.6
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>/libs/
+       
+		COMMAND ${CMAKE_COMMAND} -E copy
+            ${TGUI_BINARY_DIR}/lib/libtgui.so
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>/libs/
+ 
+ 		COMMAND ${CMAKE_COMMAND} -E copy
+            ${thor_BINARY_DIR}/src/libthor.so
             $<TARGET_FILE_DIR:${PROJECT_NAME}>/libs/
           
 		COMMAND ${CMAKE_COMMAND} -E copy
