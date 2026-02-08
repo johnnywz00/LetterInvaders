@@ -79,9 +79,6 @@ jobs:
         # Set "-DCMAKE_C_COMPILER=${{ matrix.c_compiler }}" for C/C++ projects, otherwise use CXX for C++ only projects.
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_CXX_STANDARD=17
-          -DCMAKE_CXX_STANDARD_REQUIRED=ON
-          -DCMAKE_CXX_EXTENSIONS=OFF
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -DCMAKE_BUILD_TYPE=Release
           -DSFML_BUILD_SHARED_LIBS=ON
@@ -133,6 +130,8 @@ jobs:
         # the currently existing .zip so it gets created afresh in the
         # archiving step.
         run: |
+          ls -la _deps/tgui-build/lib/
+          ls -la _deps/thor-build/src/
           mkdir "${{ vars.PROJNAME }}-${{ runner.os }}"
           mv bin/Release/* bin/resources "${{ vars.PROJNAME }}-${{ runner.os }}"/
           rm -rfv *.exe *.zip
@@ -142,6 +141,8 @@ jobs:
         if: runner.os != 'Windows'
         shell: bash
         run: |
+          ls -la _deps/tgui-build/lib/
+          ls -la _deps/thor-build/src/
           mkdir "${{ vars.PROJNAME }}-${{ runner.os }}"
           mv bin/* "${{ vars.PROJNAME }}-${{ runner.os }}"
 
