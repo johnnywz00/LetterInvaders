@@ -107,7 +107,7 @@ jobs:
 
       - name: WFUI
         shell: cmd
-        run: tree /F .\_deps\tgui-build\lib
+        run: tree /F .\_deps\tgui-build\
         
       # The next two steps have to do with keeping the layout simple so
       # that no installation is required after downloading/extracting and 
