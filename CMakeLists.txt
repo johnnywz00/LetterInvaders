@@ -39,6 +39,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(thor)
 target_compile_features(thor PRIVATE cxx_std_11)
+target_include_directories(${PROJECT_NAME} PRIVATE
+	${thor_SOURCE_DIR}/include
+	${TGUI_INCLUDE_DIR}
+)
 
 FetchContent_Declare(sfml_shared_headers
     GIT_REPOSITORY https://github.com/johnnywz00/SFML-shared-headers.git
