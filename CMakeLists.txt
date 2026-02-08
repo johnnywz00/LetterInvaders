@@ -99,8 +99,8 @@ if(WIN32)
 			${sfml_shared_headers_SOURCE_DIR}/sfml-dlls/${SFML_ARCH}
             $<TARGET_FILE_DIR:${PROJECT_NAME}>
 
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-			${TGUI_BINARY_DIR}/lib
+		COMMAND ${CMAKE_COMMAND} -E copy
+			${TGUI_BINARY_DIR}/lib/tgui.dll
             $<TARGET_FILE_DIR:${PROJECT_NAME}>
 
         VERBATIM
@@ -154,7 +154,11 @@ elseif(UNIX AND NOT APPLE)
 		COMMAND ${CMAKE_COMMAND} -E copy
             ${TGUI_BINARY_DIR}/lib/libtgui.so
             $<TARGET_FILE_DIR:${PROJECT_NAME}>/libs/
- 
+
+ 		COMMAND ${CMAKE_COMMAND} -E copy
+            ${TGUI_BINARY_DIR}/lib/libtgui.so.1.6.1
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>/libs/
+
 		COMMAND ${CMAKE_COMMAND} -E copy
 			"${CMAKE_SOURCE_DIR}/Linux README.txt"
 			$<TARGET_FILE_DIR:${PROJECT_NAME}>
