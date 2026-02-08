@@ -6,5 +6,5 @@ out
 .vscode
 *.piko
 *.xcode*
-liscores.txt
+liscores-*
 *.dylib
