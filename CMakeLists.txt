@@ -37,7 +37,7 @@ FetchContent_Declare(
     GIT_TAG v2.0
 )
 FetchContent_MakeAvailable(thor)
-target_compile_options(thor PRIVATE -std=c++0x)
+target_compile_options(thor PRIVATE -std=c++98)
 
 #set(CMAKE_CXX_STANDARD 17)
 #set(CMAKE_CXX_STANDARD_REQUIRED ON)
