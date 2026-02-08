@@ -30,16 +30,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(TGUI)
 
-set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
-set(THOR_SHARED_LIBS ON)
-FetchContent_Declare(
-    thor
-    GIT_REPOSITORY https://github.com/johnnywz00/Thor-lite.git
-    GIT_TAG main
-)
-FetchContent_MakeAvailable(thor)
-target_compile_features(thor PRIVATE cxx_std_11)
-
 FetchContent_Declare(sfml_shared_headers
     GIT_REPOSITORY https://github.com/johnnywz00/SFML-shared-headers.git
     GIT_TAG main
@@ -58,8 +48,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-	${thor_SOURCE_DIR}/include
-	${thor_SOURCE_DIR}/extlibs/aurora/include
 	${TGUI_INCLUDE_DIR}
 )
 
@@ -80,7 +68,6 @@ endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE 
 	zsprite resource_manager timed_event_manager jwzsfml jwzhpp
 	high_score
-	thor
 	TGUI::TGUI
 	sfml-audio sfml-graphics sfml-window sfml-system
 )
@@ -116,10 +103,6 @@ if(WIN32)
 			${TGUI_BINARY_DIR}/lib
             $<TARGET_FILE_DIR:${PROJECT_NAME}>
 
- 		COMMAND ${CMAKE_COMMAND} -E copy
-            ${thor_BINARY_DIR}/src/thor.dll
-            $<TARGET_FILE_DIR:${PROJECT_NAME}>/libs/
- 
         VERBATIM
     )
 
@@ -141,10 +124,6 @@ elseif(APPLE)
             ${SFML_SOURCE_DIR}/extlibs/libs-osx/Frameworks
             $<TARGET_FILE_DIR:${PROJECT_NAME}>/Frameworks/
 
- 		COMMAND ${CMAKE_COMMAND} -E copy
-            ${thor_BINARY_DIR}/src/libthor.dylib
-            $<TARGET_FILE_DIR:${PROJECT_NAME}>/libs/
- 
         VERBATIM
     )
 
@@ -176,10 +155,6 @@ elseif(UNIX AND NOT APPLE)
             ${TGUI_BINARY_DIR}/lib/libtgui.so
             $<TARGET_FILE_DIR:${PROJECT_NAME}>/libs/
  
- 		COMMAND ${CMAKE_COMMAND} -E copy
-            ${thor_BINARY_DIR}/src/libthor.so
-            $<TARGET_FILE_DIR:${PROJECT_NAME}>/libs/
-          
 		COMMAND ${CMAKE_COMMAND} -E copy
 			"${CMAKE_SOURCE_DIR}/Linux README.txt"
 			$<TARGET_FILE_DIR:${PROJECT_NAME}>
