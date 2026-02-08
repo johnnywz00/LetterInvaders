@@ -39,5 +39,5 @@ Ready-made program files are available on the Releases page of this repository, 
 - Run:
 <pre>
    cmake -B build
-   cmake --build build
+   cmake --build build --parallel
 </pre>
