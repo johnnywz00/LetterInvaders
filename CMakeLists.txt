@@ -23,6 +23,7 @@ FetchContent_MakeAvailable(SFML)
 set(TGUI_BACKEND SFML_GRAPHICS)
 set(TGUI_BUILD_FRAMEWORK OFF)
 set(TGUI_BUILD_GUI_BUILDER OFF)
+set(TGUI_SHARED_LIBS OFF)
 FetchContent_Declare(
     TGUI
     GIT_REPOSITORY https://github.com/texus/TGUI.git
@@ -68,7 +69,7 @@ endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE 
 	zsprite resource_manager timed_event_manager jwzsfml jwzhpp
 	high_score
-	TGUI::TGUI
+	tgui
 	sfml-audio sfml-graphics sfml-window sfml-system
 )
 
