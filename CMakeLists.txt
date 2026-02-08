@@ -39,10 +39,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(thor)
 target_compile_features(thor PRIVATE cxx_std_11)
-target_include_directories(${PROJECT_NAME} PRIVATE
-	${thor_SOURCE_DIR}/include
-	${TGUI_INCLUDE_DIR}
-)
 
 FetchContent_Declare(sfml_shared_headers
     GIT_REPOSITORY https://github.com/johnnywz00/SFML-shared-headers.git
@@ -59,6 +55,11 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+	${thor_SOURCE_DIR}/include
+	${TGUI_INCLUDE_DIR}
 )
 
 if(APPLE)
