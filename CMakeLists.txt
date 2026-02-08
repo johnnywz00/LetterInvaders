@@ -20,6 +20,7 @@ set(SFML_STATIC_LIBRARIES OFF CACHE BOOL "Don't build static SFML libraries")
 FetchContent_MakeAvailable(SFML)
 
 set(TGUI_BACKEND SFML_GRAPHICS)
+set(TGUI_BUILD_FRAMEWORK OFF)
 FetchContent_Declare(
     TGUI
     GIT_REPOSITORY https://github.com/texus/TGUI.git
