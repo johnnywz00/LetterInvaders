@@ -48,6 +48,25 @@ void Ball::basicInit ()
 }
 
 
+void Ball::swirlExit (Time tm)
+{
+	float p = (tm - blastTime).asSeconds();
+	vecf dest {blastDestX, -100};
+	vecf vecDif = dest - blastPos;
+	float hypot = hyp(vecDif);
+	float radius = 80;
+	float ratio = radius / hypot;
+	vecf offset = vecDif * ratio;
+	vecf initAxis = blastPos + offset;
+	vecDif = dest - initAxis;
+	vecf axis = initAxis + vecDif * p;
+	vecf offs2 {blastPos - initAxis};
+	float initDegs = toPolar(offs2).y;
+	float degs = initDegs + 360 * (fmod(p, 5) / .2);
+	vecf v = toRect(radius, degs);
+	s.sP(axis + v);
+}
+
 unordered_map<string, Keyboard::Key> Ball::keyMap
 {
     { "A", Keyboard::A },

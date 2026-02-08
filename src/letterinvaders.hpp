@@ -88,7 +88,7 @@ private:
 
 	void spawnBall (Time);
 
-    void destroyBall (Ball&);
+    void destroyBall (Ball&, Time);
 
     void endGame ();
 
@@ -109,7 +109,6 @@ private:
 	
 	
 	tgui::Gui*                      gui;
-	thor::Animator<Ball, string>    animator;
     Text                            txt;
     ZSprite                         bkgd;
 	Sprite							ground

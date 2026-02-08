@@ -56,10 +56,13 @@ struct Ball: public VSprite
     Ball (string, Color);
 	
     void basicInit ();
+	
+	void swirlExit(Time);
 
 	static unordered_map<string, Keyboard::Key> keyMap;
 
 	Text            txt;
+	Time			blastTime;
     Keyboard::Key   key;
     vecF            blastPos;
     float           mass;

@@ -2,7 +2,6 @@
 #include "statemanager.hpp"
 #include "letterinvaders.hpp"
 
-void swirlExit (Ball& b, float p);
 
 void LetterInvadersState::onCreate ()
 {
@@ -57,10 +56,6 @@ void LetterInvadersState::onCreate ()
 				  "SCORE: " + tS(curScore) + "\n\n" +
 				  "LEVEL: " + tS(curLevel) +
 				  "\n\n" + curSetLabel);
-
-	/* Set up Thor animator for making shot balls swirl */
-	animator.addAnimation("swirlexit", &swirlExit, seconds(1.f));
-	animator.playAnimation("swirlexit");
 } //end onCreate
 
 
@@ -160,28 +155,23 @@ void LetterInvadersState::update (const Time& elapsed)
 	if (bkgdScaleDegree >= 360)
 		bkgdScaleDegree -= 360;
 
-	animator.update(animClock.restart());
-	
 	/* Destroy a falling ball if the corresponding key is pressed */
 	for (auto itr = balls.begin(); itr != balls.end(); ++itr) {
 		Ball& b = *itr;
 		if (b.isActive && Keyboard::isKeyPressed(b.key)) {
-			destroyBall(b);
+			destroyBall(b, elapsed);
 			fadeTime = elapsed + seconds(.15);
-			break; // so find_if will not leave some destroyed balls unerased
 		}
-		
-		/* Currently only using the animator to make the ball
-		 * swirl around off of the screen after being shot
-		 */
+		/* Do a swirling animation as the ball is blasted away */
 		if (!b.isActive) {
-			animator.animate(b);
+			b.swirlExit(elapsed);
 		}
 	}
-	auto p = find_if(balls.begin(), balls.end(),
-					 [&](auto& x) { return !x.isActive && x.s.gP().y <= -15; });
-	if (p != balls.end())
-		balls.erase(p);
+	balls.erase(
+				remove_if(balls.begin(), balls.end(),
+					 [&](auto& x) { return !x.isActive && x.s.gP().y < -50; }),
+				balls.end()
+				);
 
 	/* Generate new falling ball based on time elapsed and level difficulty */
 	if (elapsed.asSeconds() > lastSpawnTime.asSeconds() + spawnInterval)
@@ -190,9 +180,9 @@ void LetterInvadersState::update (const Time& elapsed)
 	/* Rudimentary Fuse behavior for when to turn off last laser shot*/
 	if (elapsed > fadeTime)
 		drawBeam = false;
-
 	
-	/* Animate bouncing balls */
+/* Animate bouncing balls */
+	
 	float phi = 0, hyp1 = 0;
 	float ax1, ay1, bx1, by1;
 
@@ -467,7 +457,7 @@ void LetterInvadersState::spawnBall (Time tm)
     lastSpawnTime = tm;
 }
 
-void LetterInvadersState::destroyBall (Ball& b)
+void LetterInvadersState::destroyBall (Ball& b, Time tm)
 {
     curScore += 1;
     if (!(curScore % 10)) {
@@ -490,32 +480,13 @@ void LetterInvadersState::destroyBall (Ball& b)
     gSound(key).play();
     b.isActive = false;
     b.blastPos = b.s.gP();
-    animator.playAnimation("swirlexit");
+	b.blastTime = tm;
 	
 	/* Create a "laser beam" zapping the ball */
     auto q = beam.gP() - b.blastPos;
     beam.setSize(vecf(toPolar(q).x, beam.getSize().y));
     beam.setRotation(toPolar(q).y - 180);
     drawBeam = true;
-}
-
-/* Top-level function */
-void swirlExit (Ball& b, float p)
-{
-	vecf dest {b.blastDestX, -100};
-	vecf vecDif = dest - b.blastPos;
-	float hypot = hyp(vecDif);
-	float radius = 80;
-	float ratio = radius / hypot;
-	vecf offset = vecDif * ratio;
-	vecf initAxis = b.blastPos + offset;
-	vecDif = dest - initAxis;
-	vecf axis = initAxis + vecDif * p;
-	vecf offs2 {b.blastPos - initAxis};
-	float initRads = toPolar(offs2).y;
-	float rads = initRads + 360 * (fmod(p, 5) / .2);
-	vecf v = toRect(radius, rads);
-	b.s.sP(axis + v);
 }
 
 void LetterInvadersState::endGame ()
