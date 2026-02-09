@@ -100,9 +100,13 @@ if(WIN32)
 			${sfml_shared_headers_SOURCE_DIR}/sfml-dlls/${SFML_ARCH}
             $<TARGET_FILE_DIR:${PROJECT_NAME}>
 
+# DON'T ADD THIS COPY STEP IF USING TGUI and GitHub Actions: 
+# TGUI places the .dll where it ends up alongside 
+# the executable after .yml actions have run.
+#
 #		COMMAND ${CMAKE_COMMAND} -E copy
 #			${TGUI_BINARY_DIR}/lib/Release/tgui.dll
-#            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+#           $<TARGET_FILE_DIR:${PROJECT_NAME}>
 
         VERBATIM
     )
