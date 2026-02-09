@@ -34,15 +34,15 @@ jobs:
  #           archive_type: tar
  #           archive_name: ${{ vars.PROJNAME }}-macos-arm64.tar.gz
             
-          - os: ubuntu-latest
-            cpp_compiler: g++
-            archive_type: tar
-            archive_name: ${{ vars.PROJNAME }}-ubuntu-latest-x86_64.tar.gz
-            
- #         - os: [ubuntu-22.04]
+ #         - os: ubuntu-latest
  #           cpp_compiler: g++
  #           archive_type: tar
- #           archive_name: ${{ vars.PROJNAME }}-ubuntu22-x86_64.tar.gz
+ #           archive_name: ${{ vars.PROJNAME }}-ubuntu-latest-x86_64.tar.gz
+            
+          - os: [ubuntu-22.04]
+            cpp_compiler: g++
+            archive_type: tar
+            archive_name: ${{ vars.PROJNAME }}-ubuntu22-x86_64.tar.gz
 
  #         - os: windows-latest
  #           cpp_compiler: cl
