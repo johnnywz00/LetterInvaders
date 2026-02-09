@@ -1,6 +1,6 @@
 # LetterInvaders
 
-## SFML (C++) typing challenge game for children
+## C++/SFML typing challenge game for children
 
 <img width="1728" height="1117" alt="Screenshot 2026-02-08 at 2 00 43 PM" src="https://github.com/user-attachments/assets/da109167-fbc1-476f-8442-407d15f438e2" />
 
