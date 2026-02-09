@@ -11,6 +11,11 @@
 #include "highscore.hpp"
 
 
+// (Hopefully) temporary disabling of TGUI/high scores on Windows
+#if defined(_WIN32) || defined(_WIN64)
+	#define WINDOWS
+#endif
+
 class LetterInvadersState: public BaseState
 {
 public:

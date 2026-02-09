@@ -69,8 +69,10 @@ void LetterInvadersState::onDestroy ()
 
 void LetterInvadersState::activate ()
 {
-	renWin()->setMouseCursorVisible(false);
+#ifndef WINDOWS
 	setUpHighScores();
+#endif
+	renWin()->setMouseCursorVisible(false);
 	reset();
 }
 
@@ -81,7 +83,9 @@ void LetterInvadersState::deactivate ()
 	auto scoresPtr = gui->get("scores");
 	if (scoresPtr)
 		scoresPtr->setVisible(false);
+#ifndef WINDOWS
 	gui->removeAllWidgets();
+#endif
 }
 
 void LetterInvadersState::onKeyPress (Keyboard::Key k)
@@ -494,7 +498,9 @@ void LetterInvadersState::endGame ()
     running = false;
     gameOver = true;
     gSound("gameOver").play();
-    showHighScores(curScore, curLevel);
+#ifndef WINDOWS
+	showHighScores(curScore, curLevel);
+#endif
 }
 
 void LetterInvadersState::showHighScores (int score, int level)
