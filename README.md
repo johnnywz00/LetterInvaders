@@ -15,6 +15,8 @@ This game is one of several projects that I undertook in the early days of my pr
 
 The event managing and game state registration are probably a bit of overkill for what this program is, but I was adopting someone else's approach for setting up an abstract SFML app when I was brand-new to GUI programming. I later used the TGUI library to facilitate entering and displaying high scores for Letter Invaders.
 
+(NOTE: Linking to TGUI was causing errors in the Windows version. For now, the high scores feature is disabled in Windows. It should work fine on Mac and Linux.)
+
 ### FILE DESCRIPTIONS
 * **sfmlApp:**  Implements `main()` and the abstract app
 * **sfgamewindow:**  Wrapper class for sf::RenderWindow
