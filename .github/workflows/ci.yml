@@ -34,15 +34,15 @@ jobs:
             archive_type: tar
             archive_name: ${{ vars.PROJNAME }}-macos-arm64.tar.gz
             
- #         - os: ubuntu-latest
- #           cpp_compiler: g++
- #           archive_type: tar
- #           archive_name: ${{ vars.PROJNAME }}-ubuntu-latest-x86_64.tar.gz
+          - os: ubuntu-latest
+            cpp_compiler: g++
+            archive_type: tar
+            archive_name: ${{ vars.PROJNAME }}-ubuntu-latest-x86_64.tar.gz
             
-#          - os: [ubuntu-22.04]
-#            cpp_compiler: g++
-#            archive_type: tar
-#            archive_name: ${{ vars.PROJNAME }}-ubuntu22-x86_64.tar.gz
+          - os: [ubuntu-22.04]
+            cpp_compiler: g++
+            archive_type: tar
+            archive_name: ${{ vars.PROJNAME }}-ubuntu22-x86_64.tar.gz
 
           - os: windows-latest
             cpp_compiler: cl
@@ -81,9 +81,6 @@ jobs:
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -DCMAKE_BUILD_TYPE=Release
-          -DSFML_BUILD_SHARED_LIBS=ON
-          -DBUILD_SHARED_LIBS=ON
-          -DSFML_STATIC_LIBRARIES=OFF
           -DPROJECT_VERSION="${{ github.ref_name }}"
           -S ${{ github.workspace }}
 
@@ -105,12 +102,6 @@ jobs:
           sudo apt-get install -y patchelf
           patchelf --set-rpath '$ORIGIN' bin/libs/libsfml-audio.so.2.6
 
-      - name: WFUI
-        working-directory: ${{ steps.strings.outputs.build-output-dir }}
-        shell: cmd
-        if: runner.os == 'Windows'
-        run: tree /F .\_deps\tgui-build\
-        
       # The next two steps have to do with keeping the layout simple so
       # that no installation is required after downloading/extracting and 
       # so that the executable file can find all of its libraries and 
@@ -126,6 +117,7 @@ jobs:
       # with the exception that on Mac and Linux we can use libs/ and frameworks/
       # instead of keeping the libraries loose because we can set the 
       # rpath while building with cmake.
+      
       - name: (Windows) Reconfigure directory structure and remove extraneous .exe
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
         shell: bash
@@ -135,6 +127,9 @@ jobs:
         # In order to get the directory layout we want, we have to delete
         # the currently existing .zip so it gets created afresh in the
         # archiving step.
+        #
+        # NOTE: If building TGUI in CMakeLists, tgui.dll will end up alongside
+        # the executable after this command without any explicit copy command.
         run: |
           mkdir "${{ vars.PROJNAME }}-${{ runner.os }}"
           mv bin/Release/* bin/resources "${{ vars.PROJNAME }}-${{ runner.os }}"/
