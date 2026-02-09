@@ -23,7 +23,7 @@ FetchContent_MakeAvailable(SFML)
 set(TGUI_BACKEND SFML_GRAPHICS)
 set(TGUI_BUILD_FRAMEWORK OFF)
 set(TGUI_BUILD_GUI_BUILDER OFF)
-set(TGUI_SHARED_LIBS OFF)
+set(TGUI_SHARED_LIBS ON)
 FetchContent_Declare(
     TGUI
     GIT_REPOSITORY https://github.com/texus/TGUI.git
