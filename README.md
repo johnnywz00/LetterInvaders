@@ -38,7 +38,7 @@ The event managing and game state registration are probably a bit of overkill fo
 * **highscore:**  Struct representing data for one high score entry
 
 ### BUILDING INSTRUCTIONS
-Ready-made program files are available on the Releases page of this repository, with versions for MacOS, Windows, and Linux. If your OS isn't supported by the pre-made versions, or if you have other reasons for building from source:
+Ready-made program files are available on the Releases page of this repository, with versions for MacOS, Windows, and Linux. NO INSTALLATION NECESSARY: just download and double-click. If your OS isn't supported by the pre-made versions, or if you have other reasons for building from source:
 - Clone this repository, and navigate to the root folder of that clone in a terminal window.
 - Run:
 <pre>
