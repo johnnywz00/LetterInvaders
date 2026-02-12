@@ -106,12 +106,7 @@ private:
 	
 	RenderWindow* renWin ();
 
-	float SCRW () { return renWin()->getDefaultView().getSize().x; }
-	float SCRH () { return renWin()->getDefaultView().getSize().y; }
-	float SCRCX () { return renWin()->getDefaultView().getSize().x / 2; }
-	float SCRCY () { return renWin()->getDefaultView().getSize().y / 2; }
-	
-	
+
 	tgui::Gui*                      gui;
     Text                            txt;
     ZSprite                         bkgd;

@@ -39,8 +39,8 @@ void Game::lateUpdate ()
 
 
 
-int main (int argc, char **argv) {
- 
+int main (int argc, char **argv)
+{
     /* XCode folly: two instances of the program are launched if
      * we customize the working directory. We can cause the extraneous
      * instance to silently quit immediately by giving it a relative
@@ -51,6 +51,7 @@ int main (int argc, char **argv) {
     if (!img.loadFromFile(iconPath))
         return EXIT_FAILURE;
 #endif
+	
 	Resources::initialize(argc, argv);
 
 	Game game;
